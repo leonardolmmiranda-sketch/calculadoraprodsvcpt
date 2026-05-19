@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Produtividade — SVC</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --yellow: #FFF8DC; --yellow-mid: #F5E97A; --yellow-dark: #E8D98A;
+  --blue: #2C3E6B; --blue-dark: #1E2D52; --blue-deeper: #15203D;
+  --blue-mid: #3D5490; --blue-light: #EEF2FF;
+  --dark: #1A1A2E; --text: #333; --gray: #717171;
+  --gray-light: #F5F5F5; --border: #EBEBEB; --white: #FFF;
+  --green: #2E7D5E; --green-dark: #1F5C44; --green-light: #E8F5EE;
+  --purple: #5B3AA8; --purple-light: #EEE8FA;
+  --orange: #C4631A; --orange-light: #FDF0E6;
+  --teal: #0B7E8A; --teal-light: #E0F5F7;
+  --red: #B91C1C; --red-light: #FEE2E2;
+  --bg: #EDEAE3;
+}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ── */
+header { background: var(--yellow); height: 60px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; border-bottom: 2px solid var(--yellow-dark); }
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.logo-mark { width: 36px; height: 36px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.logo-mark svg { width: 20px; height: 20px; }
+.logo-name { font-family: 'Raleway', sans-serif; font-weight: 800; font-size: 17px; color: var(--blue-deeper); }
+.logo-sub { font-size: 10px; font-weight: 600; color: var(--blue-dark); letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; }
+.badge-header { background: var(--blue); color: var(--yellow-mid); font-family: 'Raleway', sans-serif; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+.header-nav { display: flex; align-items: center; gap: 8px; }
+.nav-link { font-size: 12px; font-weight: 600; color: var(--blue-deeper); text-decoration: none; background: rgba(255,255,255,0.7); padding: 5px 14px; border-radius: 20px; border: 1px solid var(--yellow-dark); transition: background .15s; }
+.nav-link:hover { background: white; }
+
+/* ── HERO ── */
+.hero { background: var(--yellow); padding: 3rem 2rem 2.5rem; text-align: center; border-bottom: 3px solid var(--yellow-dark); }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--blue); margin-bottom: 14px; background: rgba(44,62,107,0.08); padding: 5px 16px; border-radius: 20px; }
+.hero h1 { font-family: 'Raleway', sans-serif; font-size: clamp(26px, 5vw, 46px); font-weight: 900; color: var(--blue-deeper); letter-spacing: -1px; margin-bottom: 10px; }
+.hero h1 span { background: var(--blue); color: var(--yellow-mid); padding: 2px 10px; border-radius: 6px; }
+.hero-sub { font-size: 15px; color: var(--blue-dark); opacity: 0.75; max-width: 560px; margin: 0 auto 20px; line-height: 1.6; }
+.hero-pills { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.pill { background: white; border: 1px solid rgba(44,62,107,0.15); border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 500; color: var(--blue-dark); }
+
+/* ── LAYOUT ── */
+.app-layout { display: grid; grid-template-columns: 360px 1fr; gap: 24px; max-width: 1260px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+/* ── PANEL ── */
+.panel { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+.panel-header { background: var(--blue); padding: 1rem 1.25rem; display: flex; align-items: center; gap: 10px; }
+.panel-title { font-family: 'Raleway', sans-serif; font-size: 14px; font-weight: 800; color: var(--yellow-mid); }
+
+/* ── INPUTS PANEL ── */
+.inputs-panel { display: flex; flex-direction: column; position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto; }
+.inputs-panel::-webkit-scrollbar { width: 4px; }
+.inputs-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.section-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gray); padding: 10px 1.25rem 4px; background: var(--gray-light); border-top: 1px solid var(--border); }
+.input-group { padding: 8px 1.25rem; display: flex; flex-direction: column; gap: 4px; border-bottom: 1px solid #F0F0F0; }
+.input-label { font-size: 11px; font-weight: 600; color: var(--blue-deeper); }
+.input-hint  { font-size: 10px; color: var(--gray); margin-top: 1px; }
+.input-row { display: flex; align-items: center; gap: 8px; }
+input[type=number], select { flex: 1; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 8px; background: white; color: var(--blue-deeper); transition: border-color .15s; appearance: none; -webkit-appearance: none; }
+input[type=number]:focus, select:focus { outline: none; border-color: var(--blue-mid); }
+.input-unit { font-size: 10px; font-weight: 600; color: var(--gray); white-space: nowrap; min-width: 32px; }
+
+/* ── RESULTS ── */
+.results-col { display: flex; flex-direction: column; gap: 20px; }
+
+/* summary */
+.summary-bar { background: var(--blue); border-radius: 12px; padding: 1rem 1.25rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+.summary-item { display: flex; flex-direction: column; gap: 2px; }
+.summary-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(245,233,122,0.6); }
+.summary-value { font-family: 'Raleway', sans-serif; font-size: 20px; font-weight: 900; color: var(--yellow-mid); line-height: 1; }
+.summary-sub { font-size: 10px; color: rgba(255,255,255,0.5); }
+
+/* flow block */
+.flow-block { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+.flow-header { display: flex; align-items: center; gap: 10px; padding: 10px 1.25rem; cursor: pointer; user-select: none; transition: background .15s; }
+.flow-header:hover { background: var(--gray-light); }
+.flow-badge { font-family: 'Raleway', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; }
+.flow-badge.sorteable { background: var(--blue-light); color: var(--blue); border: 1px solid rgba(44,62,107,0.2); }
+.flow-badge.large     { background: var(--orange-light); color: var(--orange); border: 1px solid rgba(196,99,26,0.2); }
+.flow-badge.oversize  { background: var(--purple-light); color: var(--purple); border: 1px solid rgba(91,58,168,0.2); }
+.flow-badge.bulky     { background: var(--teal-light); color: var(--teal); border: 1px solid rgba(11,126,138,0.2); }
+.flow-badge.dispatch  { background: var(--green-light); color: var(--green); border: 1px solid rgba(46,125,94,0.2); }
+.flow-title { font-family: 'Raleway', sans-serif; font-size: 13px; font-weight: 800; color: var(--blue-deeper); flex: 1; }
+.flow-chevron { font-size: 12px; color: var(--gray); transition: transform .2s; }
+.flow-header.open .flow-chevron { transform: rotate(180deg); }
+.flow-body { display: none; padding: 0 1.25rem 1.25rem; }
+.flow-body.open { display: block; }
+
+/* process row */
+.process-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: start; padding: 10px 0; border-bottom: 1px solid #F5F5F5; }
+.process-row:last-child { border-bottom: none; }
+.process-name { font-size: 12px; font-weight: 600; color: var(--blue-deeper); }
+.process-desc { font-size: 11px; color: var(--gray); margin-top: 2px; }
+select.method-select { font-size: 11px; padding: 5px 8px; border-radius: 8px; border: 1.5px solid var(--border); color: var(--blue-deeper); background: var(--gray-light); min-width: 200px; }
+select.method-select:focus { border-color: var(--blue-mid); background: white; }
+.cap-badge { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-width: 90px; }
+.cap-value { font-family: 'Raleway', sans-serif; font-size: 18px; font-weight: 900; line-height: 1; color: var(--blue); transition: color .2s; }
+.cap-value.na { color: var(--red); font-size: 13px; }
+.cap-unit { font-size: 9px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; }
+.cap-type { font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
+.cap-type.fixed    { background: var(--green-light); color: var(--green-dark); }
+.cap-type.variable { background: #FFF3CD; color: #856404; }
+.cap-type.conditional { background: var(--red-light); color: var(--red); }
+
+/* info note */
+.info-note { background: var(--blue-light); border: 1px solid rgba(44,62,107,0.15); border-radius: 10px; padding: 10px 14px; font-size: 11px; color: var(--blue-deeper); line-height: 1.6; display: flex; gap: 8px; }
+
+/* callout */
+.callout { background: var(--orange-light); border: 1px solid rgba(196,99,26,0.2); border-radius: 10px; padding: 10px 14px; font-size: 11px; color: var(--orange); line-height: 1.6; display: flex; gap: 8px; margin-bottom: 12px; }
+
+/* footer */
+footer { background: var(--yellow); border-top: 2px solid var(--yellow-dark); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.footer-brand { font-family: 'Raleway', sans-serif; font-size: 13px; font-weight: 700; color: var(--blue-deeper); }
+.footer-note { font-size: 12px; color: var(--blue-dark); opacity: 0.7; }
+
+/* animations */
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.flow-block { animation: fadeUp .3s ease both; }
+.flow-block:nth-child(2) { animation-delay:.05s; } .flow-block:nth-child(3) { animation-delay:.10s; }
+.flow-block:nth-child(4) { animation-delay:.15s; } .flow-block:nth-child(5) { animation-delay:.20s; }
+.flow-block:nth-child(6) { animation-delay:.25s; }
+
+@media (max-width: 900px) { .app-layout { grid-template-columns: 1fr; } .inputs-panel { position: static; max-height: none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">
+    <div class="logo-mark">
+      <svg viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="6.5" r="3.5" fill="#F5E97A"/>
+        <path d="M2.5 17.5c0-4.142 3.358-7.5 7.5-7.5s7.5 3.358 7.5 7.5" stroke="#F5E97A" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-name">Mercado Libre</div>
+      <div class="logo-sub">MTM · Service Center</div>
+    </div>
+  </a>
+  <div class="header-nav">
+    <a class="nav-link" href="calculadora_mtm_svc_es.html">🇪🇸 Español</a>
+    <a class="nav-link" href="https://mtmtransportes-paginainiciales.vercel.app/">🏠 Página Inicial</a>
+    <span class="badge-header">MTM</span>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-eyebrow">⚙️ Planejamento Operacional</div>
+  <h1>Calculadora de Produtividade — <span>SVC</span></h1>
+  <p class="hero-sub">Selecione o método de cada posto de trabalho e veja a produtividade calculada em tempo real para o Service Center.</p>
+  <div class="hero-pills">
+    <div class="pill">📦 Descarga · Inducción</div>
+    <div class="pill">🏷️ Etiquetagem</div>
+    <div class="pill">🔀 Diverter · Pesca</div>
+    <div class="pill">📬 Sorting · Goleiro</div>
+    <div class="pill">🚛 Dispatch</div>
+  </div>
+</div>
+
+<div class="app-layout">
+
+  <!-- ══════════════ INPUTS ══════════════ -->
+  <div class="inputs-panel panel">
+    <div class="panel-header">
+      <span style="font-size:18px">⚙️</span>
+      <span class="panel-title">Dados da Operação</span>
+    </div>
+
+    <div class="section-label">📊 Geral</div>
+    <div class="input-group">
+      <div class="input-label">Volume por ciclo</div>
+      <div class="input-row"><input type="number" id="vol_ciclo" value="5300" min="1"><span class="input-unit">paq</span></div>
+      <div class="input-hint">Total de pacotes no ciclo operacional</div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">% Voluminosos (Large)</div>
+      <div class="input-row"><input type="number" id="pct_vol" value="10" min="0" max="100"><span class="input-unit">%</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">% Oversizes</div>
+      <div class="input-row"><input type="number" id="pct_over" value="0" min="0" max="100"><span class="input-unit">%</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">% Bulky</div>
+      <div class="input-row"><input type="number" id="pct_bulky" value="0" min="0" max="100"><span class="input-unit">%</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Tempo ciclo Inhub (janela LH)</div>
+      <div class="input-row"><input type="number" id="t_inhub" value="2" min="0.5" step="0.5"><span class="input-unit">hrs</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Tempo ciclo Sorting</div>
+      <div class="input-row"><input type="number" id="t_sorting" value="1" min="0.5" step="0.5"><span class="input-unit">hrs</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Tempo ciclo Despacho</div>
+      <div class="input-row"><input type="number" id="t_dispatch" value="1" min="0.5" step="0.5"><span class="input-unit">hrs</span></div>
+    </div>
+
+    <div class="section-label">📦 Sorting / Layout</div>
+    <div class="input-group">
+      <div class="input-label">Bakers por rua/ilha (Sorteable)</div>
+      <div class="input-row"><input type="number" id="bakers_rua_sort" value="20" min="1"><span class="input-unit">pzas</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Qtd. ruas/ilhas (Sorteable)</div>
+      <div class="input-row"><input type="number" id="ruas_sort" value="6" min="1"><span class="input-unit">ruas</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Bakers por rua/ilha (Voluminosos)</div>
+      <div class="input-row"><input type="number" id="bakers_rua_vol" value="20" min="1"><span class="input-unit">pzas</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Qtd. ruas/ilhas (Voluminosos)</div>
+      <div class="input-row"><input type="number" id="ruas_vol" value="6" min="1"><span class="input-unit">ruas</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Tarimas por rua/ilha (Oversizes)</div>
+      <div class="input-row"><input type="number" id="tarimas_over" value="10" min="1"><span class="input-unit">pzas</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Qtd. ruas/ilhas (Oversizes)</div>
+      <div class="input-row"><input type="number" id="ruas_over" value="6" min="1"><span class="input-unit">ruas</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Tem rua de sacas (nodos)?</div>
+      <div class="input-row">
+        <select id="tem_sacas" onchange="calc()">
+          <option value="sim" selected>Sim</option>
+          <option value="nao">Não</option>
+        </select>
+      </div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">BCs por rua de nodos (sacas)</div>
+      <div class="input-row"><input type="number" id="bcs_nodos" value="3" min="0"><span class="input-unit">BCs</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Pacotes / saca</div>
+      <div class="input-row"><input type="number" id="paq_saca" value="0" min="0"><span class="input-unit">paq</span></div>
+    </div>
+
+    <div class="section-label">📏 Descarga — Distâncias</div>
+    <div class="input-group">
+      <div class="input-label">Dist. média buffer Bulky</div>
+      <div class="input-row"><input type="number" id="dist_bulky" value="10" min="1"><span class="input-unit">m</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Dist. descarga → buffer Sorteable</div>
+      <div class="input-row"><input type="number" id="dist_sort" value="10" min="1"><span class="input-unit">m</span></div>
+      <div class="input-hint">Afeta Descarga + Movimentação</div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Dist. descarga → buffer Voluminoso</div>
+      <div class="input-row"><input type="number" id="dist_vol" value="20" min="1"><span class="input-unit">m</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Dist. média buffer Oversize</div>
+      <div class="input-row"><input type="number" id="dist_over" value="10" min="1"><span class="input-unit">m</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Qtd. Line Hauls a receber</div>
+      <div class="input-row"><input type="number" id="qtd_lh" value="1" min="1"><span class="input-unit">LHs</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">HUs (Gaylords/Pallets) por LH</div>
+      <div class="input-row"><input type="number" id="hus_lh" value="50" min="1"><span class="input-unit">HU/LH</span></div>
+      <div class="input-hint">Impacta freq. abertura de HU na descarga</div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">SPP médio / HU</div>
+      <div class="input-row"><input type="number" id="spp_hu" value="100" min="1"><span class="input-unit">paq</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">% Bulky no veículo (pallet)</div>
+      <div class="input-row"><input type="number" id="pct_bulky_vei" value="0" min="0" max="100"><span class="input-unit">%</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">% Pacotes granel no veículo</div>
+      <div class="input-row"><input type="number" id="pct_granel" value="0" min="0" max="100"><span class="input-unit">%</span></div>
+    </div>
+
+    <div class="section-label">🔄 Reinducción — Goleiro</div>
+    <div class="input-group">
+      <div class="input-label">BCs por ilha/rua de reinducción</div>
+      <div class="input-row"><input type="number" id="bcs_reinduccion" value="10" min="1"><span class="input-unit">BCs</span></div>
+    </div>
+
+    <div class="section-label">🚛 Dispatch — Distâncias</div>
+    <div class="input-group">
+      <div class="input-label">Dist. buffer GM → vaga</div>
+      <div class="input-row"><input type="number" id="dist_gm_vaga" value="50" min="1"><span class="input-unit">m</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Dist. buffer Voluminoso → vaga</div>
+      <div class="input-row"><input type="number" id="dist_vol_vaga" value="50" min="1"><span class="input-unit">m</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Dist. buffer Oversize → vaga</div>
+      <div class="input-row"><input type="number" id="dist_over_vaga" value="50" min="1"><span class="input-unit">m</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Dist. buffer Bulky → vaga</div>
+      <div class="input-row"><input type="number" id="dist_bulky_vaga" value="50" min="1"><span class="input-unit">m</span></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">Dist. buffer Frágeis → vaga</div>
+      <div class="input-row"><input type="number" id="dist_fragil_vaga" value="50" min="1"><span class="input-unit">m</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ RESULTS ══════════════ -->
+  <div class="results-col">
+
+    <!-- SUMMARY -->
+    <div class="summary-bar">
+      <div class="summary-item">
+        <div class="summary-label">Volume / Ciclo</div>
+        <div class="summary-value" id="s-vol">5.300</div>
+        <div class="summary-sub">pacotes</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">% Voluminosos</div>
+        <div class="summary-value" id="s-vol-pct">10%</div>
+        <div class="summary-sub">do mix</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Cap. Sorteable necessária</div>
+        <div class="summary-value" id="s-cap-sort">—</div>
+        <div class="summary-sub">paq/h (sorting)</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Cap. Large necessária</div>
+        <div class="summary-value" id="s-cap-large">—</div>
+        <div class="summary-sub">paq/h (sorting)</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Gargalo Sorteable</div>
+        <div class="summary-value" id="s-bottleneck">—</div>
+        <div class="summary-sub" id="s-bottleneck-name">paq/h</div>
+      </div>
+    </div>
+
+    <!-- ── FLUXO SORTEABLE ── -->
+    <div class="flow-block">
+      <div class="flow-header open" onclick="toggleFlow(this)">
+        <span class="flow-badge sorteable">📦 Sorteable</span>
+        <span class="flow-title">Fluxo Principal — Pacotes Normais</span>
+        <span class="flow-chevron">▼</span>
+      </div>
+      <div class="flow-body open">
+
+        <div class="process-row">
+          <div><div class="process-name">Descarga</div><div class="process-desc">Descarrega LH no buffer</div></div>
+          <select class="method-select" id="sel_descarga" onchange="calc()">
+            <option value="1875.477428" selected>100% Palletizado – Con Dock</option>
+            <option value="1762.038194">100% Palletizado – Sin Dock</option>
+            <option value="1623.640461">Granel + Pallet – Con Dock</option>
+            <option value="1841.627615">Palletizado + Bulky (baker frágil) – Con Dock</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_descarga">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_descarga">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Movimento até Buffer</div><div class="process-desc">Translado do buffer à inducción</div></div>
+          <select class="method-select" id="sel_mov_sort" onchange="calc()">
+            <option value="7127.583749" selected>Traslado en Patín mecánico</option>
+            <option value="7365.980085">Traslado en Patín eléctrico – Condutor a pé</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_mov_sort">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_mov_sort">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Inducción</div><div class="process-desc">Coloca paq. na esteira</div></div>
+          <select class="method-select" id="sel_ind_sort" onchange="calc()">
+            <option value="1736.287955" selected>Inducción 90° – Flowrack</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_ind_sort">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_ind_sort">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Etiquetagem</div><div class="process-desc">Bipa e etiqueta o pacote</div></div>
+          <select class="method-select" id="sel_etiq_sort" onchange="calc()">
+            <option value="1668.891856" selected>Flowrack contínuo (duplo)</option>
+            <option value="1203.090821">Flowrack contínuo (simples)</option>
+            <option value="1440.937878">Flow + mesa (duplo)</option>
+            <option value="804.6395876">Flow + mesa (simples)</option>
+            <option value="1515.98735">Conveyor de rodillos motorizado</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_etiq_sort">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_etiq_sort">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Diverter</div><div class="process-desc">Separação na esteira</div></div>
+          <select class="method-select" id="sel_diverter" onchange="calc()">
+            <option value="1363.140676" selected>Separación manual paquetes</option>
+            <option value="0">Não (sem diverter)</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_diverter">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_diverter">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Pesca / Separação</div><div class="process-desc">Retira paq. da esteira para a ilha</div></div>
+          <select class="method-select" id="sel_pesca_sort" onchange="calc()">
+            <option value="947.8313618" selected>Carrito con separación – 1 isla/calle</option>
+            <option value="736.9848476">Carrito con separación – 2 islas/calles</option>
+            <option value="1009.448437">Flow/finger – 1 isla/calle</option>
+            <option value="219.9155524">Pesca Manual – PE 2 Carrinhos (frente e fundo)</option>
+            <option value="202.1229">Pesca Manual – PE 4 Carrinhos (2 ruas)</option>
+            <option value="823.2857">Pesca Motorizada – Buffer 90° (frente e fundo)</option>
+            <option value="723.2533">Pesca Motorizada – Compartilhado 2 ruas (pneumática)</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_pesca_sort">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_pesca_sort">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Sorting</div><div class="process-desc">Aloca paq. na rota correta</div></div>
+          <select class="method-select" id="sel_sorting_sort" onchange="calc()">
+            <option value="290.9721055" selected>Carrito – pasillo 1,6m (separação frente/fundo)</option>
+            <option value="308.0377312">Carrito – pasillo 1,3m (separação frente/fundo)</option>
+            <option value="284.6335817">Carrito – pasillo 1,3m BK 1,5m</option>
+            <option value="250.31">Sorting buffer no meio da rua (1 a 1)</option>
+            <option value="183.37">Conteinerização – Finger Espina de Pescado</option>
+            <option value="289.63">Contenerização – Separação frente/fundo pneumática</option>
+            <option value="955.4388">Sorting Pesca – buffer 90° junto à esteira</option>
+            <option value="595.4421">Sorting Pesca – até 8 BCs</option>
+            <option value="496.1691">Sorting Pesca – 9–12 BCs</option>
+            <option value="367.5086">Sorting Pesca – 13–18 BCs</option>
+            <option value="591.3015">Sorting Pesca – 4 BC 2 níveis</option>
+            <option value="528.3211">Sorting Pesca – 4 BC 3 níveis</option>
+            <option value="493.2887">Sorting Pesca – 6 BC 2 níveis</option>
+            <option value="448.6735">Sorting Pesca – 6 BC 3 níveis</option>
+            <option value="804.3787">Sorting Pesca – Mesa</option>
+            <option value="708.9045">Sorting Pesca – 2 Fingers</option>
+            <option value="809.2991">Sorting Pesca – 1 Finger frente e fundo</option>
+            <option value="1009.448437">Sorting Pesca – 1 Finger</option>
+            <option value="363.2160603">Conteinerização Sacas – Baker SACAS COM SEPARAÇÃO</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_sorting_sort">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_sorting_sort">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Goleiro / Reinducción</div><div class="process-desc">Reinduz pacotes não pescados</div></div>
+          <select class="method-select" id="sel_goleiro" onchange="calc()">
+            <option value="1342.64232" selected>Reinducción – Sem separação – BC 90°</option>
+            <option value="727.87">Reinducción – Sem separação + Bipar – BC 90°</option>
+            <option value="981.16">Reinducción – Com separação (LD/LE) – BC 90°</option>
+            <option value="648.56">Reinducción – Com separação + Bipar – BC 90°</option>
+            <option value="357.14">Reinducción Ilhas – Com separação – 1 BC/rua</option>
+            <option value="300.96">Reinducción Ilhas – Com separação + Bipar – 1 BC/rua</option>
+            <option value="379.94">Reinducción Esteira – Sem separação – BC p/ reinducción</option>
+            <option value="316.99">Reinducción Esteira – Sem separação + Bipar</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_goleiro">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_goleiro">fixa</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── FLUXO LARGE ── -->
+    <div class="flow-block">
+      <div class="flow-header open" onclick="toggleFlow(this)">
+        <span class="flow-badge large">📦 Large</span>
+        <span class="flow-title">Fluxo Voluminoso — Pacotes Large</span>
+        <span class="flow-chevron">▼</span>
+      </div>
+      <div class="flow-body open">
+
+        <div class="process-row">
+          <div><div class="process-name">Inducción Large</div><div class="process-desc">Induz paq. volumoso no fluxo</div></div>
+          <select class="method-select" id="sel_ind_large" onchange="calc()">
+            <option value="310.095876" selected>Inducción 90° – Flowrack</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_ind_large">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_ind_large">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Etiquetagem Large</div><div class="process-desc">Etiqueta pacote volumoso</div></div>
+          <select class="method-select" id="sel_etiq_large" onchange="calc()">
+            <option value="386.2497866" selected>Flowrack Manual</option>
+            <option value="NA">Manual – Pallet</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_etiq_large">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_etiq_large">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Pesca Large</div><div class="process-desc">Retira paq. volumoso do fluxo</div></div>
+          <select class="method-select" id="sel_pesca_large" onchange="calc()">
+            <option value="267.5585284" selected>Separación en Baker (Cart)</option>
+            <option value="255.7544757">Flowrack manual – 1 isla</option>
+            <option value="163.2986324">Flowrack manual – 2 islas</option>
+            <option value="244.95">Separación en Pallet</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_pesca_large">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_pesca_large">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Sorting Large</div><div class="process-desc">Aloca paq. volumoso na rota</div></div>
+          <select class="method-select" id="sel_sorting_large" onchange="calc()">
+            <option value="112.7840749" selected>Flowrack Manual Espinha Pescado</option>
+            <option value="121.33">Baker Cart – Sorteador fixo na ilha</option>
+            <option value="130.57">Flowrack manual Berenice</option>
+            <option value="80.42">Com Pallet – Sorteador fixo na ilha</option>
+            <option value="54.38">Flowrack curto central</option>
+            <option value="54.06">Traspaleo en Piso</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_sorting_large">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_sorting_large">fixa</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── OVERSIZE ── -->
+    <div class="flow-block">
+      <div class="flow-header open" onclick="toggleFlow(this)">
+        <span class="flow-badge oversize">📦 Oversize</span>
+        <span class="flow-title">Fluxo Oversize</span>
+        <span class="flow-chevron">▼</span>
+      </div>
+      <div class="flow-body open">
+        <div class="callout">⚠️ O fluxo Oversize usa <strong>Sin Conveyor</strong>. Todos os processos são manuais com patín ou baker.</div>
+
+        <div class="process-row">
+          <div><div class="process-name">Movimento → Buffer</div><div class="process-desc">Move oversize até buffer</div></div>
+          <select class="method-select" id="sel_mov_over_buf" onchange="calc()">
+            <option value="190.0689" selected>Traslado en Patín mecánico</option>
+            <option value="196.4261356">Traslado en Patín eléctrico – Condutor a pé</option>
+            <option value="332.4944007">Traslado con Baker</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_mov_over_buf">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_mov_over_buf">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Movimento nas Ruas</div><div class="process-desc">Movimenta oversize nas ruas</div></div>
+          <select class="method-select" id="sel_mov_over_rua" onchange="calc()">
+            <option value="136.4469776" selected>Traslado en Patín mecánico</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_mov_over_rua">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_mov_over_rua">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Etiquetagem Oversize</div><div class="process-desc">Etiqueta pacote oversize</div></div>
+          <select class="method-select" id="sel_etiq_over" onchange="calc()">
+            <option value="224.3878028" selected>Pallet</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_etiq_over">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_etiq_over">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Sorting Oversize</div><div class="process-desc">Aloca oversize na rota</div></div>
+          <select class="method-select" id="sel_sorting_over" onchange="calc()">
+            <option value="132.7580485" selected>Pallet</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_sorting_over">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_sorting_over">fixa</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── BULKY ── -->
+    <div class="flow-block">
+      <div class="flow-header open" onclick="toggleFlow(this)">
+        <span class="flow-badge bulky">📦 Bulky</span>
+        <span class="flow-title">Fluxo Bulky</span>
+        <span class="flow-chevron">▼</span>
+      </div>
+      <div class="flow-body open">
+
+        <div class="process-row">
+          <div><div class="process-name">Movimento → Buffer</div><div class="process-desc">Move bulky até buffer</div></div>
+          <select class="method-select" id="sel_mov_bulky_buf" onchange="calc()">
+            <option value="155.7326935" selected>Carrito Manual</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_mov_bulky_buf">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_mov_bulky_buf">fixa</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Movimento nas Ruas</div><div class="process-desc">Movimenta bulky nas ruas</div></div>
+          <select class="method-select" id="sel_mov_bulky_rua" onchange="calc()">
+            <option value="17.82602379" selected>Carrito Manual</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_mov_bulky_rua">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type fixed" id="type_mov_bulky_rua">fixa</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── DISPATCH ── -->
+    <div class="flow-block">
+      <div class="flow-header open" onclick="toggleFlow(this)">
+        <span class="flow-badge dispatch">🚛 Dispatch</span>
+        <span class="flow-title">Despacho — Puxada + Carga</span>
+        <span class="flow-chevron">▼</span>
+      </div>
+      <div class="flow-body open">
+
+        <div class="process-row">
+          <div><div class="process-name">Puxada GM (Sorteable)</div><div class="process-desc">Move HU até vaga de despacho</div></div>
+          <select class="method-select" id="sel_puxada_sort" onchange="calc()">
+            <option value="disp_sort_calc" selected>Traslado en Patín mecánico</option>
+            <option value="7365.980085">Traslado en Patín eléctrico – Condutor a pé</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_puxada_sort">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type variable" id="type_puxada_sort">variável</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Puxada Voluminoso</div><div class="process-desc">Move HU volumoso até vaga</div></div>
+          <select class="method-select" id="sel_puxada_vol" onchange="calc()">
+            <option value="disp_vol_calc" selected>Traslado en Patín mecánico</option>
+            <option value="disp_vol_pe">Traslado en Patín eléctrico</option>
+            <option value="disp_vol_bk">Traslado con Baker</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_puxada_vol">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type variable" id="type_puxada_vol">variável</div>
+          </div>
+        </div>
+
+        <div class="process-row">
+          <div><div class="process-name">Puxada Oversize</div><div class="process-desc">Move oversize até vaga</div></div>
+          <select class="method-select" id="sel_puxada_over" onchange="calc()">
+            <option value="disp_over_calc" selected>Traslado en Patín mecánico</option>
+            <option value="disp_over_pe">Traslado en Patín eléctrico</option>
+            <option value="disp_over_bk">Traslado con Baker</option>
+          </select>
+          <div class="cap-badge">
+            <div class="cap-value" id="cap_puxada_over">—</div>
+            <div class="cap-unit">paq/h</div>
+            <div class="cap-type variable" id="type_puxada_over">variável</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-note">
+      <span>💡</span>
+      <span>O SVC tem <strong>dois subsistemas paralelos</strong>: o fluxo de Inbound (Descarga → Inducción → Etiquetagem → Diverter) e o fluxo de Sorting (Pesca → Sorting → Goleiro), cada um com sua própria janela de tempo. Processos de Oversize e Bulky são independentes e usam apenas movimentação manual sem conveyor.</span>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand">Mercado Libre — MTM</div>
+  <div class="footer-note">Calculadora de Produtividade · Service Center SVC</div>
+</footer>
+
+<script>
+// ── Velocidades de referência (paq/h a 10m, dist base calibrada) ──
+// Patín mecánico base 10m → 7127.58
+// A relação de escala: cap ∝ dist_base / dist_atual
+const MOV_PATIN_MEC_BASE = 7127.583749;
+const MOV_PATIN_PE_BASE  = 7365.980085;
+const MOV_BAKER_BASE     = 0; // não disponível como método de sorteable
+const DIST_BASE_MOV = 10; // metros de referência para Movimento
+
+// Dispatch: base 50m
+const DISP_PATIN_MEC_BASE = 7127.583749;
+const DISP_PATIN_PE_BASE  = 7365.980085;
+const DISP_BAKER_BASE     = 0;
+const DIST_BASE_DISP = 50;
+
+// Large movimento base 20m
+const LARGE_PATIN_MEC_BASE = 7127.583749;
+const DIST_BASE_LARGE = 20;
+
+function getIn(id) { return +document.getElementById(id).value || 0; }
+
+function getInputs() {
+  return {
+    vol_ciclo:       getIn('vol_ciclo'),
+    pct_vol:         getIn('pct_vol') / 100,
+    pct_over:        getIn('pct_over') / 100,
+    pct_bulky:       getIn('pct_bulky') / 100,
+    t_inhub:         getIn('t_inhub'),
+    t_sorting:       getIn('t_sorting'),
+    t_dispatch:      getIn('t_dispatch'),
+    bakers_rua_sort: getIn('bakers_rua_sort'),
+    ruas_sort:       getIn('ruas_sort'),
+    bakers_rua_vol:  getIn('bakers_rua_vol'),
+    ruas_vol:        getIn('ruas_vol'),
+    tarimas_over:    getIn('tarimas_over'),
+    ruas_over:       getIn('ruas_over'),
+    dist_sort:       getIn('dist_sort'),
+    dist_vol:        getIn('dist_vol'),
+    dist_over:       getIn('dist_over'),
+    dist_bulky:      getIn('dist_bulky'),
+    qtd_lh:          getIn('qtd_lh'),
+    hus_lh:          getIn('hus_lh'),
+    spp_hu:          getIn('spp_hu'),
+    bcs_reinduccion: getIn('bcs_reinduccion'),
+    dist_gm_vaga:    getIn('dist_gm_vaga'),
+    dist_vol_vaga:   getIn('dist_vol_vaga'),
+    dist_over_vaga:  getIn('dist_over_vaga'),
+    dist_bulky_vaga: getIn('dist_bulky_vaga'),
+    dist_fragil_vaga:getIn('dist_fragil_vaga'),
+  };
+}
+
+function resolveCapacity(selId, inp) {
+  const val = document.getElementById(selId).value;
+  const num = parseFloat(val);
+  if (!isNaN(num) && num >= 0) return { cap: num > 0 ? num : null, type: num > 0 ? 'fixed' : 'conditional' };
+  if (val === 'NA') return { cap: null, type: 'conditional' };
+
+  // Dispatch Sorteable — escala com distância
+  if (val === 'disp_sort_calc') {
+    const ratio = DIST_BASE_DISP / Math.max(inp.dist_gm_vaga, 1);
+    return { cap: DISP_PATIN_MEC_BASE * ratio, type: 'variable' };
+  }
+  // Dispatch Voluminoso
+  if (val === 'disp_vol_calc') {
+    const ratio = DIST_BASE_DISP / Math.max(inp.dist_vol_vaga, 1);
+    return { cap: DISP_PATIN_MEC_BASE * ratio, type: 'variable' };
+  }
+  if (val === 'disp_vol_pe') {
+    const ratio = DIST_BASE_DISP / Math.max(inp.dist_vol_vaga, 1);
+    return { cap: DISP_PATIN_PE_BASE * ratio, type: 'variable' };
+  }
+  if (val === 'disp_vol_bk') {
+    // Baker não disponível como base isolada; usa patín como proxy
+    const ratio = DIST_BASE_DISP / Math.max(inp.dist_vol_vaga, 1);
+    return { cap: DISP_PATIN_MEC_BASE * ratio * 0.75, type: 'variable' };
+  }
+  // Dispatch Oversize
+  if (val === 'disp_over_calc') {
+    const ratio = DIST_BASE_DISP / Math.max(inp.dist_over_vaga, 1);
+    return { cap: 190.0689 * (DIST_BASE_DISP / DIST_BASE_MOV) * ratio, type: 'variable' };
+  }
+  if (val === 'disp_over_pe') {
+    const ratio = DIST_BASE_DISP / Math.max(inp.dist_over_vaga, 1);
+    return { cap: 196.4261356 * (DIST_BASE_DISP / DIST_BASE_MOV) * ratio, type: 'variable' };
+  }
+  if (val === 'disp_over_bk') {
+    const ratio = DIST_BASE_DISP / Math.max(inp.dist_over_vaga, 1);
+    return { cap: 332.4944007 * (DIST_BASE_DISP / DIST_BASE_MOV) * ratio, type: 'variable' };
+  }
+
+  return { cap: null, type: 'fixed' };
+}
+
+function fmt(v) {
+  if (v === null || v === undefined || isNaN(v) || !isFinite(v)) return null;
+  return Math.round(v).toLocaleString('pt-BR');
+}
+
+function setResult(capId, typeId, result) {
+  const el = document.getElementById(capId);
+  const te = document.getElementById(typeId);
+  if (!result || result.cap === null || result.cap === 0) {
+    el.textContent = result && result.cap === 0 ? '—' : 'N/A';
+    el.className = 'cap-value na';
+    te.textContent = result && result.cap === 0 ? 'n/a' : 'config.';
+    te.className = 'cap-type conditional';
+    return null;
+  }
+  el.textContent = fmt(result.cap);
+  el.className = 'cap-value';
+  te.textContent = result.type === 'fixed' ? 'fixa' : 'variável';
+  te.className = `cap-type ${result.type === 'fixed' ? 'fixed' : 'variable'}`;
+  return result.cap;
+}
+
+function calc() {
+  const inp = getInputs();
+
+  // Summary
+  document.getElementById('s-vol').textContent = inp.vol_ciclo.toLocaleString('pt-BR');
+  document.getElementById('s-vol-pct').textContent = (inp.pct_vol*100).toFixed(0) + '%';
+
+  const sortVol = inp.vol_ciclo * (1 - inp.pct_vol - inp.pct_over - inp.pct_bulky);
+  const largeVol = inp.vol_ciclo * inp.pct_vol;
+  const capSortNec = inp.t_sorting > 0 ? sortVol / inp.t_sorting : 0;
+  const capLargeNec = inp.t_sorting > 0 ? largeVol / inp.t_sorting : 0;
+  document.getElementById('s-cap-sort').textContent = fmt(capSortNec);
+  document.getElementById('s-cap-large').textContent = fmt(capLargeNec);
+
+  const processes = [
+    ['sel_descarga',       'cap_descarga',       'type_descarga'],
+    ['sel_mov_sort',       'cap_mov_sort',        'type_mov_sort'],
+    ['sel_ind_sort',       'cap_ind_sort',        'type_ind_sort'],
+    ['sel_etiq_sort',      'cap_etiq_sort',       'type_etiq_sort'],
+    ['sel_diverter',       'cap_diverter',        'type_diverter'],
+    ['sel_pesca_sort',     'cap_pesca_sort',      'type_pesca_sort'],
+    ['sel_sorting_sort',   'cap_sorting_sort',    'type_sorting_sort'],
+    ['sel_goleiro',        'cap_goleiro',         'type_goleiro'],
+    ['sel_ind_large',      'cap_ind_large',       'type_ind_large'],
+    ['sel_etiq_large',     'cap_etiq_large',      'type_etiq_large'],
+    ['sel_pesca_large',    'cap_pesca_large',     'type_pesca_large'],
+    ['sel_sorting_large',  'cap_sorting_large',   'type_sorting_large'],
+    ['sel_mov_over_buf',   'cap_mov_over_buf',    'type_mov_over_buf'],
+    ['sel_mov_over_rua',   'cap_mov_over_rua',    'type_mov_over_rua'],
+    ['sel_etiq_over',      'cap_etiq_over',       'type_etiq_over'],
+    ['sel_sorting_over',   'cap_sorting_over',    'type_sorting_over'],
+    ['sel_mov_bulky_buf',  'cap_mov_bulky_buf',   'type_mov_bulky_buf'],
+    ['sel_mov_bulky_rua',  'cap_mov_bulky_rua',   'type_mov_bulky_rua'],
+    ['sel_puxada_sort',    'cap_puxada_sort',     'type_puxada_sort'],
+    ['sel_puxada_vol',     'cap_puxada_vol',      'type_puxada_vol'],
+    ['sel_puxada_over',    'cap_puxada_over',     'type_puxada_over'],
+  ];
+
+  // Sorteable bottleneck
+  const sortIds = ['cap_descarga','cap_ind_sort','cap_etiq_sort','cap_pesca_sort','cap_sorting_sort'];
+  let minCap = Infinity, minName = '—';
+
+  processes.forEach(([selId, capId, typeId]) => {
+    const r = resolveCapacity(selId, inp);
+    const v = setResult(capId, typeId, r);
+    if (sortIds.includes(capId) && v && v < minCap) {
+      minCap = v;
+      const sel = document.getElementById(selId);
+      minName = sel.options[sel.selectedIndex].text.split('–')[0].trim().substring(0, 20);
+    }
+  });
+
+  if (minCap < Infinity) {
+    document.getElementById('s-bottleneck').textContent = fmt(minCap);
+    document.getElementById('s-bottleneck-name').textContent = minName;
+  }
+}
+
+function toggleFlow(header) {
+  header.classList.toggle('open');
+  header.nextElementSibling.classList.toggle('open');
+}
+
+calc();
+document.querySelectorAll('input[type=number]').forEach(el => el.addEventListener('input', calc));
+</script>
+</body>
+</html>
