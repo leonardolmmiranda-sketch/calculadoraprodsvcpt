@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Produtividade &mdash; SVC</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --yellow: #FFF8DC; --yellow-mid: #F5E97A; --yellow-dark: #E8D98A;
+  --blue: #2C3E6B; --blue-dark: #1E2D52; --blue-deeper: #15203D;
+  --blue-mid: #3D5490; --blue-light: #EEF2FF;
+  --dark: #1A1A2E; --text: #333; --gray: #717171;
+  --gray-light: #F5F5F5; --border: #EBEBEB; --white: #FFF;
+  --green: #2E7D5E; --green-dark: #1F5C44; --green-light: #E8F5EE;
+  --purple: #5B3AA8; --purple-light: #EEE8FA;
+  --orange: #C4631A; --orange-light: #FDF0E6;
+  --teal: #0B7E8A; --teal-light: #E0F5F7;
+  --red: #B91C1C; --red-light: #FEE2E2;
+  --pink: #880E4F; --pink-light: #FCE4EC;
+  --bg: #EDEAE3;
+}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* HEADER */
+header { background: var(--yellow); height: 60px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; border-bottom: 2px solid var(--yellow-dark); }
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.logo-mark { width: 36px; height: 36px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.logo-mark svg { width: 20px; height: 20px; }
+.logo-name { font-family: 'Raleway', sans-serif; font-weight: 800; font-size: 17px; color: var(--blue-deeper); }
+.logo-sub { font-size: 10px; font-weight: 600; color: var(--blue-dark); letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; }
+.badge-header { background: var(--blue); color: var(--yellow-mid); font-family: 'Raleway', sans-serif; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+.header-nav { display: flex; align-items: center; gap: 8px; }
+.nav-link { font-size: 12px; font-weight: 600; color: var(--blue-deeper); text-decoration: none; background: rgba(255,255,255,0.7); padding: 5px 14px; border-radius: 20px; border: 1px solid var(--yellow-dark); transition: background .15s; cursor: pointer; }
+.nav-link:hover { background: white; }
+
+/* HERO */
+.hero { background: var(--yellow); padding: 3rem 2rem 2.5rem; text-align: center; border-bottom: 3px solid var(--yellow-dark); }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--blue); margin-bottom: 14px; background: rgba(44,62,107,0.08); padding: 5px 16px; border-radius: 20px; }
+.hero h1 { font-family: 'Raleway', sans-serif; font-size: clamp(24px, 4vw, 42px); font-weight: 900; color: var(--blue-deeper); letter-spacing: -1px; margin-bottom: 10px; }
+.hero h1 span { background: var(--blue); color: var(--yellow-mid); padding: 2px 10px; border-radius: 6px; }
+.hero-sub { font-size: 15px; color: var(--blue-dark); opacity: 0.75; max-width: 560px; margin: 0 auto 20px; line-height: 1.6; }
+.hero-pills { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.pill { background: white; border: 1px solid rgba(44,62,107,0.15); border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 500; color: var(--blue-dark); }
+
+/* LAYOUT */
+.app-layout { display: grid; grid-template-columns: 340px 1fr; gap: 24px; max-width: 1300px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+/* PANEL */
+.panel { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+.panel-header { background: var(--blue); padding: 1rem 1.25rem; display: flex; align-items: center; gap: 10px; }
+.panel-title { font-family: 'Raleway', sans-serif; font-size: 14px; font-weight: 800; color: var(--yellow-mid); }
+
+/* INPUTS PANEL */
+.inputs-panel { display: flex; flex-direction: column; position: sticky; top: 76px; max-height: calc(100vh - 92px); overflow-y: auto; }
+.inputs-panel::-webkit-scrollbar { width: 4px; }
+.inputs-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.section-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gray); padding: 10px 1.25rem 4px; background: var(--gray-light); border-top: 1px solid var(--border); }
+.input-group { padding: 7px 1.25rem; display: flex; flex-direction: column; gap: 3px; border-bottom: 1px solid #F0F0F0; }
+.input-label { font-size: 11px; font-weight: 600; color: var(--blue-deeper); }
+.input-row { display: flex; align-items: center; gap: 8px; }
+input[type=number], select.inp-sel { flex: 1; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; padding: 5px 8px; border: 1.5px solid var(--border); border-radius: 8px; background: white; color: var(--blue-deeper); transition: border-color .15s; appearance: none; -webkit-appearance: none; }
+input[type=number]:focus, select.inp-sel:focus { outline: none; border-color: var(--blue-mid); }
+.input-unit { font-size: 10px; font-weight: 600; color: var(--gray); white-space: nowrap; min-width: 28px; }
+
+/* RESULTS */
+.results-col { display: flex; flex-direction: column; gap: 20px; }
+
+/* summary */
+.summary-bar { background: var(--blue); border-radius: 12px; padding: 1rem 1.25rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+.summary-item { display: flex; flex-direction: column; gap: 2px; }
+.summary-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(245,233,122,0.65); }
+.summary-value { font-family: 'Raleway', sans-serif; font-size: 20px; font-weight: 900; color: var(--yellow-mid); line-height: 1; }
+.summary-sub { font-size: 10px; color: rgba(255,255,255,0.45); }
+
+/* flow block */
+.flow-block { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+.flow-header { display: flex; align-items: center; gap: 10px; padding: 12px 1.25rem; cursor: pointer; user-select: none; transition: background .15s; }
+.flow-header:hover { background: var(--gray-light); }
+.flow-badge { font-family: 'Raleway', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+.flow-badge.sorteable { background: var(--blue-light); color: var(--blue); border: 1px solid rgba(44,62,107,0.2); }
+.flow-badge.large     { background: var(--orange-light); color: var(--orange); border: 1px solid rgba(196,99,26,0.2); }
+.flow-badge.oversize  { background: var(--purple-light); color: var(--purple); border: 1px solid rgba(91,58,168,0.2); }
+.flow-badge.bulky     { background: var(--teal-light); color: var(--teal); border: 1px solid rgba(11,126,138,0.2); }
+.flow-badge.livianos  { background: var(--pink-light); color: var(--pink); border: 1px solid rgba(136,14,79,0.2); }
+.flow-title { font-family: 'Raleway', sans-serif; font-size: 13px; font-weight: 800; color: var(--blue-deeper); flex: 1; }
+.flow-chevron { font-size: 12px; color: var(--gray); transition: transform .2s; }
+.flow-header.open .flow-chevron { transform: rotate(180deg); }
+.flow-body { display: none; padding: 0 1.25rem 1.25rem; }
+.flow-body.open { display: block; }
+
+/* info bar */
+.info-bar { font-size: 11px; color: var(--blue-deeper); background: var(--blue-light); border: 1px solid rgba(44,62,107,0.15); border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; line-height: 1.5; }
+
+/* process row */
+.process-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center; padding: 9px 0; border-bottom: 1px solid #F5F5F5; }
+.process-row:last-child { border-bottom: none; }
+.process-row.s-sort  { border-left: 3px solid var(--blue);   padding-left: 8px; }
+.process-row.s-large { border-left: 3px solid var(--orange); padding-left: 8px; }
+.process-row.s-over  { border-left: 3px solid var(--purple); padding-left: 8px; }
+.process-row.s-bulky { border-left: 3px solid var(--teal);   padding-left: 8px; }
+.process-row.s-liv   { border-left: 3px solid var(--pink);   padding-left: 8px; }
+.process-row.step-config { background: var(--blue-light); border-radius: 8px; padding: 8px; margin-bottom: 4px; border-bottom: none; border-left: none; }
+.process-name { font-size: 12px; font-weight: 600; color: var(--blue-deeper); }
+.process-desc { font-size: 10px; color: var(--gray); margin-top: 2px; }
+.process-fixed-lbl { font-size: 11px; color: var(--gray); font-style: italic; }
+.method-select { width: 100%; font-family: 'Inter', sans-serif; font-size: 11px; padding: 5px 8px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--gray-light); color: var(--blue-deeper); appearance: none; -webkit-appearance: none; transition: border-color .15s; }
+.method-select:focus { outline: none; border-color: var(--blue-mid); background: white; }
+.cap-badge { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-width: 80px; }
+.cap-value { font-family: 'Raleway', sans-serif; font-size: 17px; font-weight: 900; line-height: 1; color: var(--blue); }
+.cap-value.na { color: var(--red); font-size: 12px; font-weight: 600; }
+.cap-unit { font-size: 9px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; }
+.cap-type { font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
+.cap-type.fixed    { background: var(--green-light); color: var(--green-dark); }
+.cap-type.variable { background: #FFF3CD; color: #856404; }
+.cap-type.conditional { background: var(--red-light); color: var(--red); }
+.note { font-size: 9px; background: #FFF3CD; color: #856404; padding: 2px 5px; border-radius: 3px; display: inline-block; margin-top: 2px; }
+.callout { background: var(--orange-light); border: 1px solid rgba(196,99,26,0.2); border-radius: 10px; padding: 10px 14px; font-size: 11px; color: var(--orange); line-height: 1.6; display: flex; gap: 8px; margin-bottom: 12px; }
+.info-note { background: var(--blue-light); border: 1px solid rgba(44,62,107,0.15); border-radius: 12px; padding: 12px 16px; font-size: 11px; color: var(--blue-deeper); line-height: 1.6; display: flex; gap: 8px; }
+footer { background: var(--yellow); border-top: 2px solid var(--yellow-dark); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.footer-brand { font-family: 'Raleway', sans-serif; font-size: 13px; font-weight: 700; color: var(--blue-deeper); }
+.footer-note { font-size: 12px; color: var(--blue-dark); opacity: 0.7; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.flow-block { animation: fadeUp .3s ease both; }
+.flow-block:nth-child(2){animation-delay:.05s} .flow-block:nth-child(3){animation-delay:.10s}
+.flow-block:nth-child(4){animation-delay:.15s} .flow-block:nth-child(5){animation-delay:.20s}
+.flow-block:nth-child(6){animation-delay:.25s}
+@media (max-width: 900px) { .app-layout { grid-template-columns: 1fr; } .inputs-panel { position: static; max-height: none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="https://mtmtransportes-paginainicialpt.vercel.app/">
+    <div class="logo-mark">
+      <svg viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="6.5" r="3.5" fill="#F5E97A"/>
+        <path d="M2.5 17.5c0-4.142 3.358-7.5 7.5-7.5s7.5 3.358 7.5 7.5" stroke="#F5E97A" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-name">Mercado Libre</div>
+      <div class="logo-sub">MTM &middot; Service Center</div>
+    </div>
+  </a>
+  <div class="header-nav">
+    <a class="nav-link" id="btnLang" onclick="event.preventDefault();toggleLang()">&#x1F1EA;&#x1F1F8; Espa&ntilde;ol</a>
+    <a class="nav-link" href="https://mtmtransportes-paginainicialpt.vercel.app/">&#x1F3E0; <span data-t="home">P&aacute;gina Inicial</span></a>
+    <span class="badge-header">MTM</span>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-eyebrow">&#x2699;&#xFE0F; <span data-t="hero_eyebrow">Planejamento Operacional</span></div>
+  <h1><span data-t="hero_title1">Calculadora de Produtividade</span> &mdash; <span>SVC</span></h1>
+  <p class="hero-sub" data-t="hero_sub">Selecione o m&eacute;todo de cada posto de trabalho e veja a produtividade calculada em tempo real para o Service Center.</p>
+  <div class="hero-pills">
+    <div class="pill">&#x1F4E6; <span data-t="pill1">Descarga &middot; Indu&ccedil;&atilde;o</span></div>
+    <div class="pill">&#x1F3F7;&#xFE0F; <span data-t="pill2">Etiquetagem</span></div>
+    <div class="pill">&#x1F500; <span data-t="pill3">Diverter &middot; Pesca</span></div>
+    <div class="pill">&#x1F4EB; <span data-t="pill4">Sorting &middot; Goleiro</span></div>
+    <div class="pill">&#x1F0CF; <span data-t="pill5">Livianos</span></div>
+  </div>
+</div>
+
+<div class="app-layout">
+
+<!-- INPUTS -->
+<div class="inputs-panel panel">
+  <div class="panel-header">
+    <span style="font-size:18px">&#x2699;&#xFE0F;</span>
+    <span class="panel-title" data-t="inputs">Dados da Opera&ccedil;&atilde;o</span>
+  </div>
+
+  <div class="section-label" data-t="sec_process">Processo</div>
+  <div class="input-group">
+    <div class="input-label" data-t="vol">Volume / ciclo</div>
+    <div class="input-row"><input type="number" id="vol" min="0"><span class="input-unit">paq</span></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="pct_vol">% Volumoso (Large)</div>
+    <div class="input-row"><input type="number" id="pctVol" min="0" max="100"><span class="input-unit">%</span></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="pct_over">% Oversize</div>
+    <div class="input-row"><input type="number" id="pctOver" min="0" max="100"><span class="input-unit">%</span></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="pct_bulky">% Bulky</div>
+    <div class="input-row"><input type="number" id="pctBulky" min="0" max="100"><span class="input-unit">%</span></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="t_inhub">Janela descarga</div>
+    <div class="input-row"><input type="number" id="tInhub" min="0.1" step="0.5"><span class="input-unit">h</span></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="t_sort">Janela sorting</div>
+    <div class="input-row"><input type="number" id="tSort" min="0.1" step="0.5"><span class="input-unit">h</span></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="t_dispatch">Janela despacho</div>
+    <div class="input-row"><input type="number" id="tDispatch" min="0.1" step="0.5"><span class="input-unit">h</span></div>
+  </div>
+
+  <div class="section-label" data-t="sec_layout">Layout / Ilhas</div>
+  <div class="input-group">
+    <div class="input-label" data-t="bc_rua_sort">BCs / rua Sorteable</div>
+    <div class="input-row"><input type="number" id="bcSort" min="1"><span class="input-unit">BCs</span></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="ruas_sort">N&ordm; ruas Sorteable</div>
+    <div class="input-row"><input type="number" id="ruasSort" min="1"></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="bc_rua_large">BCs / rua Volumoso</div>
+    <div class="input-row"><input type="number" id="bcLarge" min="1"><span class="input-unit">BCs</span></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="ruas_large">N&ordm; ruas Volumoso</div>
+    <div class="input-row"><input type="number" id="ruasLarge" min="1"></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="tarimas_rua_over">Tarimas / rua Oversize</div>
+    <div class="input-row"><input type="number" id="tarimOver" min="1"></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="ruas_over">N&ordm; ruas Oversize</div>
+    <div class="input-row"><input type="number" id="ruasOver" min="1"></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="sacas">Rua de sacas (nodos)?</div>
+    <div class="input-row">
+      <select class="inp-sel" id="temSacas" onchange="render()">
+        <option value="sim" data-t="sim">Sim</option>
+        <option value="nao" data-t="nao">N&atilde;o</option>
+      </select>
+    </div>
+  </div>
+  <div id="rowBcSacas" class="input-group">
+    <div class="input-label" data-t="bc_sacas">BCs / rua sacas</div>
+    <div class="input-row"><input type="number" id="bcSacas" min="1"><span class="input-unit">BCs</span></div>
+  </div>
+
+  <div class="section-label" data-t="sec_distances">Dist&acirc;ncias</div>
+  <div class="input-group">
+    <div class="input-label" data-t="dist_gm_buf">Buffer GM &rarr; indu&ccedil;&atilde;o</div>
+    <div class="input-row"><input type="number" id="distGM" min="1"><span class="input-unit">m</span></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="dist_large_buf">Buffer Volumoso &rarr; indu&ccedil;&atilde;o</div>
+    <div class="input-row"><input type="number" id="distLarge" min="1"><span class="input-unit">m</span></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="dist_over_buf">Dist. Oversize</div>
+    <div class="input-row"><input type="number" id="distOver" min="1"><span class="input-unit">m</span></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label" data-t="dist_bulky_buf">Dist. Bulky</div>
+    <div class="input-row"><input type="number" id="distBulky" min="1"><span class="input-unit">m</span></div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="results-col">
+
+  <div class="summary-bar">
+    <div class="summary-item">
+      <div class="summary-label" data-t="s_vol_lbl">Volume / Ciclo</div>
+      <div class="summary-value" id="s-vol">--</div>
+      <div class="summary-sub" data-t="s_vol_sub">pacotes</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label" data-t="s_sort_lbl">Sorteable</div>
+      <div class="summary-value" id="s-sort-pct">--</div>
+      <div class="summary-sub" data-t="s_mix_sub">do mix</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label" data-t="s_large_lbl">Large</div>
+      <div class="summary-value" id="s-large-pct">--</div>
+      <div class="summary-sub" data-t="s_mix_sub2">do mix</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label" data-t="s_bot_lbl">Menor prod. Sorteable</div>
+      <div class="summary-value" id="s-bottleneck">--</div>
+      <div class="summary-sub" id="s-bottleneck-name">paq/h</div>
+    </div>
+  </div>
+
+  <!-- SORTEABLE -->
+  <div class="flow-block" id="card-sort">
+    <div class="flow-header open" onclick="toggleCard('sort')">
+      <span class="flow-badge sorteable" data-t="lbl_sort">Sorteable</span>
+      <span class="flow-title" data-t="cat_sort">Fluxo Principal &mdash; Pacotes Normais</span>
+      <span class="flow-chevron">&#x25BC;</span>
+    </div>
+    <div class="flow-body open" id="body-sort">
+      <div class="info-bar" id="info-sort"></div>
+      <div id="flow-sort"></div>
+    </div>
+  </div>
+
+  <!-- LARGE -->
+  <div class="flow-block" id="card-large">
+    <div class="flow-header open" onclick="toggleCard('large')">
+      <span class="flow-badge large" data-t="lbl_large">Large</span>
+      <span class="flow-title" data-t="cat_large">Fluxo Volumoso &mdash; Pacotes Large</span>
+      <span class="flow-chevron">&#x25BC;</span>
+    </div>
+    <div class="flow-body open" id="body-large">
+      <div class="info-bar" id="info-large"></div>
+      <div id="flow-large"></div>
+    </div>
+  </div>
+
+  <!-- OVERSIZE -->
+  <div class="flow-block" id="card-over">
+    <div class="flow-header open" onclick="toggleCard('over')">
+      <span class="flow-badge oversize" data-t="lbl_over">Oversize</span>
+      <span class="flow-title" data-t="cat_over">Fluxo Oversize</span>
+      <span class="flow-chevron">&#x25BC;</span>
+    </div>
+    <div class="flow-body open" id="body-over">
+      <div class="callout">&#x26A0;&#xFE0F; <span data-t="over_callout">O fluxo Oversize usa Sin Conveyor. Todos os processos s&atilde;o manuais com pat&iacute;n ou baker.</span></div>
+      <div class="info-bar" id="info-over"></div>
+      <div id="flow-over"></div>
+    </div>
+  </div>
+
+  <!-- BULKY -->
+  <div class="flow-block" id="card-bulky">
+    <div class="flow-header open" onclick="toggleCard('bulky')">
+      <span class="flow-badge bulky" data-t="lbl_bulky">Bulky</span>
+      <span class="flow-title" data-t="cat_bulky">Fluxo Bulky</span>
+      <span class="flow-chevron">&#x25BC;</span>
+    </div>
+    <div class="flow-body open" id="body-bulky">
+      <div class="info-bar" id="info-bulky"></div>
+      <div id="flow-bulky"></div>
+    </div>
+  </div>
+
+  <!-- LIVIANOS -->
+  <div class="flow-block" id="card-liv">
+    <div class="flow-header open" onclick="toggleCard('liv')">
+      <span class="flow-badge livianos" data-t="lbl_liv">Livianos</span>
+      <span class="flow-title" data-t="cat_liv">Fluxo Livianos</span>
+      <span class="flow-chevron">&#x25BC;</span>
+    </div>
+    <div class="flow-body open" id="body-liv">
+      <div id="flow-liv"></div>
+    </div>
+  </div>
+
+  <div class="info-note">
+    <span>&#x1F4A1;</span>
+    <span data-t="info_note">O SVC tem dois subsistemas paralelos: Inbound (Descarga &rarr; Indu&ccedil;&atilde;o &rarr; Etiquetagem &rarr; Diverter) e Sorting (Pesca &rarr; Sorting &rarr; Goleiro). Oversize e Bulky s&atilde;o independentes e usam apenas movimenta&ccedil;&atilde;o manual sem conveyor.</span>
+  </div>
+
+</div>
+</div>
+
+<footer>
+  <div class="footer-brand">Mercado Libre &mdash; MTM</div>
+  <div class="footer-note" data-t="footer_note">Calculadora de Produtividade &middot; Service Center SVC</div>
+</footer>
+
+<script>
+// =====================================================================
+// I18N
+// =====================================================================
+const T = {
+  pt:{
+    home:'Pagina Inicial',
+    hero_eyebrow:'Planejamento Operacional', hero_title1:'Calculadora de Produtividade',
+    hero_sub:'Selecione o metodo de cada posto de trabalho e veja a produtividade calculada em tempo real para o Service Center.',
+    pill1:'Descarga - Inducao', pill2:'Etiquetagem', pill3:'Diverter - Pesca', pill4:'Sorting - Goleiro', pill5:'Livianos',
+    inputs:'Dados da Operacao',
+    sec_process:'Processo', sec_layout:'Layout / Ilhas', sec_distances:'Distancias',
+    vol:'Volume / ciclo', pct_vol:'% Volumoso (Large)', pct_over:'% Oversize', pct_bulky:'% Bulky',
+    t_inhub:'Janela descarga', t_sort:'Janela sorting', t_dispatch:'Janela despacho',
+    bc_rua_sort:'BCs / rua Sorteable', ruas_sort:'Nr ruas Sorteable',
+    bc_rua_large:'BCs / rua Volumoso', ruas_large:'Nr ruas Volumoso',
+    tarimas_rua_over:'Tarimas / rua Oversize', ruas_over:'Nr ruas Oversize',
+    sacas:'Rua de sacas (nodos)?', sim:'Sim', nao:'Nao', bc_sacas:'BCs / rua sacas',
+    dist_gm_buf:'Buffer GM -> inducao', dist_large_buf:'Buffer Volumoso -> inducao',
+    dist_over_buf:'Dist. Oversize', dist_bulky_buf:'Dist. Bulky',
+    s_vol_lbl:'Volume / Ciclo', s_vol_sub:'pacotes', s_sort_lbl:'Sorteable', s_large_lbl:'Large',
+    s_mix_sub:'do mix', s_mix_sub2:'do mix', s_bot_lbl:'Menor prod. Sorteable',
+    lbl_sort:'Sorteable', lbl_large:'Large', lbl_over:'Oversize', lbl_bulky:'Bulky', lbl_liv:'Livianos',
+    cat_sort:'Fluxo Principal - Pacotes Normais', cat_large:'Fluxo Volumoso - Pacotes Large',
+    cat_over:'Fluxo Oversize', cat_bulky:'Fluxo Bulky', cat_liv:'Fluxo Livianos',
+    over_callout:'O fluxo Oversize usa Sin Conveyor. Todos os processos sao manuais com patin ou baker.',
+    info_note:'O SVC tem dois subsistemas paralelos: Inbound (Descarga -> Inducao -> Etiquetagem -> Diverter) e Sorting (Pesca -> Sorting -> Goleiro). Oversize e Bulky sao independentes.',
+    footer_note:'Calculadora de Produtividade - Service Center SVC',
+    n_descarga:'Descarregamento', n_mov:'Movimentacao', n_inducao:'Inducao', n_etiq:'Etiquetagem',
+    n_diverter:'Diverter', n_pesca:'Pesca / Separacao', n_sorting:'Sorting', n_sacas:'Sorting Sacas (Nodos)',
+    n_goleiro:'Goleiro / Reinducao', n_mov_buf:'Movimentacao -> Buffer', n_mov_ruas:'Movimentacao Ruas',
+    na:'N/A', paq_h:'paq/h', step_conveyor:'Tipo de Esteira',
+    incl_mov:'Inclui movto ate buffer', so_desc:'Somente descarga',
+    vol_info:'Volume', vol_base:'paq/ciclo',
+    fixa:'fixa', variavel:'variavel', config:'config', na_lbl:'n/a', modelo_unico:'Modelo unico',
+  },
+  es:{
+    home:'Inicio',
+    hero_eyebrow:'Planificacion Operacional', hero_title1:'Calculadora de Productividad',
+    hero_sub:'Selecciona el metodo de cada puesto de trabajo y mira la productividad calculada en tiempo real para el Service Center.',
+    pill1:'Descarga - Induccion', pill2:'Etiquetado', pill3:'Diverter - Pesca', pill4:'Sorting - Goleiro', pill5:'Livianos',
+    inputs:'Datos de la Operacion',
+    sec_process:'Proceso', sec_layout:'Layout / Islas', sec_distances:'Distancias',
+    vol:'Volumen / ciclo', pct_vol:'% Voluminosos (Large)', pct_over:'% Oversize', pct_bulky:'% Bulky',
+    t_inhub:'Ventana descarga', t_sort:'Ventana sorting', t_dispatch:'Ventana despacho',
+    bc_rua_sort:'BCs / calle Sorteable', ruas_sort:'Nr calles Sorteable',
+    bc_rua_large:'BCs / calle Voluminoso', ruas_large:'Nr calles Voluminoso',
+    tarimas_rua_over:'Tarimas / calle Oversize', ruas_over:'Nr calles Oversize',
+    sacas:'Calle de sacas (nodos)?', sim:'Si', nao:'No', bc_sacas:'BCs / calle sacas',
+    dist_gm_buf:'Buffer GM -> induccion', dist_large_buf:'Buffer Voluminoso -> induccion',
+    dist_over_buf:'Dist. Oversize', dist_bulky_buf:'Dist. Bulky',
+    s_vol_lbl:'Volumen / Ciclo', s_vol_sub:'paquetes', s_sort_lbl:'Sorteable', s_large_lbl:'Large',
+    s_mix_sub:'del mix', s_mix_sub2:'del mix', s_bot_lbl:'Menor prod. Sorteable',
+    lbl_sort:'Sorteable', lbl_large:'Large', lbl_over:'Oversize', lbl_bulky:'Bulky', lbl_liv:'Livianos',
+    cat_sort:'Flujo Principal - Paquetes Normales', cat_large:'Flujo Voluminoso - Paquetes Large',
+    cat_over:'Flujo Oversize', cat_bulky:'Flujo Bulky', cat_liv:'Flujo Livianos',
+    over_callout:'El flujo Oversize usa Sin Conveyor. Todos los procesos son manuales con patin o baker.',
+    info_note:'El SVC tiene dos subsistemas paralelos: Inbound (Descarga -> Induccion -> Etiquetado -> Diverter) y Sorting (Pesca -> Sorting -> Goleiro). Oversize y Bulky son independientes.',
+    footer_note:'Calculadora de Productividad - Service Center SVC',
+    n_descarga:'Descarga', n_mov:'Movimiento', n_inducao:'Induccion', n_etiq:'Etiquetado',
+    n_diverter:'Diverter', n_pesca:'Pesca / Separacion', n_sorting:'Sorteo', n_sacas:'Sorteo Sacas (Nodos)',
+    n_goleiro:'Goleiro / Reinduccion', n_mov_buf:'Movimiento -> Buffer', n_mov_ruas:'Movimiento Calles',
+    na:'N/A', paq_h:'paq/h', step_conveyor:'Tipo de Conveyor',
+    incl_mov:'Incluye movto hasta buffer', so_desc:'Solo descarga',
+    vol_info:'Volumen', vol_base:'paq/ciclo',
+    fixa:'fija', variavel:'variable', config:'config', na_lbl:'n/a', modelo_unico:'Modelo unico',
+  }
+};
+let lang = 'pt';
+function t(k){ return (T[lang][k] !== undefined) ? T[lang][k] : k; }
+
+function applyLang(){
+  document.querySelectorAll('[data-t]').forEach(el=>{
+    const k = el.getAttribute('data-t');
+    if(k) el.textContent = t(k);
+  });
+  document.querySelectorAll('.inp-sel option[data-t]').forEach(op => op.textContent = t(op.getAttribute('data-t')));
+  const btn = document.getElementById('btnLang');
+  btn.textContent = lang==='pt' ? '🇪🇸 Espanol' : '🇧🇷 Portugues';
+  render();
+}
+function toggleLang(){ lang = lang==='pt' ? 'es' : 'pt'; applyLang(); }
+
+// =====================================================================
+// MODEL DATA
+// =====================================================================
+const DESC = {
+  DE_S_D:  { pt:'100% Palletizado - Con Dock',            es:'100% Palletizado - Con Dock',            prod:1875.48, note:'incl_mov' },
+  DE_S:    { pt:'100% Palletizado - Sin Dock',             es:'100% Palletizado - Sin Dock',             prod:1762.04, note:'incl_mov' },
+  DE_D_GR: { pt:'Granel + Pallet - Con Dock',              es:'Granel + Pallet - Con Dock',              prod:1623.64, note:'so_desc'  },
+  DE_D_M:  { pt:'Palletizado + Bulky Carrinho - Con Dock', es:'Palletizado + Bulky Carrito - Con Dock', prod:1841.63, note:'so_desc'  },
+};
+const CONV = {
+  cv_mot:  { pt:'Conveyor Motorizado',       es:'Conveyor Motorizado',       diverter:false },
+  cv_mot2: { pt:'Conveyor Motorizado Duplo', es:'Conveyor Motorizado Doble', diverter:true  },
+  cv_man:  { pt:'Conveyor Manual',           es:'Conveyor Manual',           diverter:false },
+  cv_man2: { pt:'Conveyor Manual Duplo',     es:'Conveyor Manual Doble',     diverter:true  },
+  cv_sin:  { pt:'Sem Conveyor',              es:'Sin Conveyor',              diverter:false },
+};
+const INDUC = {
+  IN_S_F: { prod:1736.29, pt:'Inducao 90 deg - Flowrack',       es:'Induccion 90 deg - Flowrack'       },
+  IN_L_F: { prod:310.10,  pt:'Inducao 90 deg - Flowrack Large', es:'Induccion 90 deg - Flowrack Large' },
+};
+const ET_SORT = {
+  ET_S_FC:  { pt:'Flowrack Continuo Duplo',   es:'Flowrack Continuo Doble',  prod:1668.89 },
+  ET_S_FC1: { pt:'Flowrack Continuo Simples', es:'Flowrack Continuo Simple', prod:1203.09 },
+  ET_S_FM:  { pt:'Flow + Mesa Duplo',          es:'Flow + Mesa Doble',         prod:1440.94 },
+  ET_S_FM1: { pt:'Flow + Mesa Simples',        es:'Flow + Mesa Simple',        prod:804.64  },
+  ET_S_RM:  { pt:'Conveyor Rodillos Motor.',   es:'Conveyor Rodillos Motor.',  prod:1515.99 },
+};
+const ET_LARGE = {
+  ET_L_F: { pt:'Flowrack Manual', es:'Flowrack Manual', prod:386.25 },
+  ET_L_P: { pt:'Manual - Pallet', es:'Manual - Pallet', prod:224.39 },
+};
+const ET_OVER = { ET_O_P: { pt:'Pallet', es:'Pallet', prod:224.39 } };
+const PESCA_SORT = {
+  motorizado: {
+    P_S_MCA2: { pt:'Carrito com separacao - 1 rua',  es:'Carrito con separacion - 1 calle',  prod:947.83  },
+    P_S_MCA4: { pt:'Carrito com separacao - 2 ruas', es:'Carrito con separacion - 2 calles', prod:736.98  },
+    P_S_8BC:  { pt:'Baker com separacao - 8 BC',     es:'Baker con separacion - 8 BC',       prod:595.44  },
+    P_S_12BC: { pt:'Baker com separacao - 12 BC',    es:'Baker con separacion - 12 BC',      prod:496.17  },
+    P_S_18BC: { pt:'Baker com separacao - 18 BC',    es:'Baker con separacion - 18 BC',      prod:367.51  },
+    P_S_1FI:  { pt:'Flow / Finger - 1 rua',          es:'Flow / Finger - 1 calle',           prod:1009.45 },
+  },
+  manual: {
+    P_S_BC:   { pt:'PE - Frente e Fundo Baker',      es:'PE - Frente y Fondo Baker',         prod:189.37  },
+  },
+  sin: {
+    P_S_ME:   { pt:'Mesa',                           es:'Mesa',                              prod:804.38  },
+    P_S_4BC2: { pt:'4 Bakers - 2 Niveis',            es:'4 Bakers - 2 Niveles',              prod:591.30  },
+    P_S_4BC3: { pt:'4 Bakers - 3 Niveis',            es:'4 Bakers - 3 Niveles',              prod:528.32  },
+    P_S_6BC2: { pt:'6 Bakers - 2 Niveis',            es:'6 Bakers - 2 Niveles',              prod:493.29  },
+    P_S_6BC3: { pt:'6 Bakers - 3 Niveis',            es:'6 Bakers - 3 Niveles',              prod:448.67  },
+  },
+};
+const PESCA_LARGE = {
+  flowrack: {
+    P_L_1F: { pt:'Flowrack Manual - 1 ilha',  es:'Flowrack Manual - 1 isla',  prod:255.75  },
+    P_L_2F: { pt:'Flowrack Manual - 2 ilhas', es:'Flowrack Manual - 2 islas', prod:163.30  },
+    S_L_B:  { pt:'Separacao em Baker',        es:'Separacion en Baker',       prod:267.56  },
+    S_L_P:  { pt:'Separacao em Pallet',       es:'Separacion en Pallet',      prod:244.95  },
+    NA_FC:  { pt:'Sem Pesca - Flow Central',  es:'Sin Pesca - Flow Central',  prod:null, na:true },
+  },
+  manual: {
+    NA_MP:  { pt:'Sem Pesca - Manual Pallet', es:'Sin Pesca - Manual Pallet', prod:null, na:true },
+  },
+};
+const SORTING_SORT = {
+  P_S_MCA2:['SO_S_CA16','SO_S_CA13','SO_S_CA13BK'], P_S_MCA4:['SO_S_CA16','SO_S_CA13','SO_S_CA13BK'],
+  P_S_8BC:['SO_S_BK'], P_S_12BC:['SO_S_BK'], P_S_18BC:['SO_S_BK'],
+  P_S_1FI:['SO_S_FL','SO_S_F'],
+  P_S_BC:['SO_S_BK1','SO_S_BK15'],
+  P_S_ME:['SO_S_ME'], P_S_4BC2:['SO_S_BKSC'], P_S_4BC3:['SO_S_BKSC'],
+  P_S_6BC2:['SO_S_BKSC'], P_S_6BC3:['SO_S_BKSC'],
+};
+const SM_SORT = {
+  SO_S_CA16:  { pt:'Carrito Pasillo 1,6 m',         es:'Carrito Pasillo 1,6 m',         prod:290.97, bc_ref:20, variable:true  },
+  SO_S_CA13:  { pt:'Carrito Pasillo 1,3 m',         es:'Carrito Pasillo 1,3 m',         prod:308.04, bc_ref:20, variable:true  },
+  SO_S_CA13BK:{ pt:'Carrito 1,3 m BK 1,5 m',       es:'Carrito 1,3 m BK 1,5 m',       prod:284.63, bc_ref:20, variable:true  },
+  SO_S_BK:    { pt:'Baker Milkrun',                 es:'Baker Milkrun',                 prod:420.53, bc_ref:20, variable:true  },
+  SO_S_FL:    { pt:'Flow / Finger',                 es:'Flow / Finger',                 prod:238.79, variable:false },
+  SO_S_F:     { pt:'Finger Espinha Pescado',        es:'Finger Espina Pescado',         prod:183.37, variable:false },
+  SO_S_BK1:   { pt:'Baker - buffer junto pescador', es:'Baker - buffer junto pescador', prod:174.84, variable:false },
+  SO_S_BK15:  { pt:'Baker 1,5 m - junto pescador',  es:'Baker 1,5 m - junto pescador',  prod:149.58, variable:false },
+  SO_S_BKSC:  { pt:'Baker + Movimentacao BC',       es:'Baker + Movimiento BC',         prod:165.92, variable:false },
+  SO_S_ME:    { pt:'Buffer Ao Redor Etiquetagem',   es:'Buffer Alrededor Etiquetado',   prod:178.51, variable:false },
+};
+const SM_SACAS = {
+  SO_S_SACAS_BK_SEP: { pt:'Baker SACAS - COM Separacao', es:'Baker SACAS - CON Separacion', prod:363.22 },
+  SO_S_SACAS_BK:     { pt:'Baker SACAS - Sem Separacao', es:'Baker SACAS - Sin Separacion', prod:null   },
+  SO_S_SACAS_SEP:    { pt:'Baker atual - COM Separacao', es:'Baker actual - CON Separacion',prod:null   },
+};
+const SORT_LARGE_BY_PESCA = {
+  P_L_1F:['SO_L_F'], P_L_2F:['SO_L_F'],
+  S_L_B:['SO_L_B','SO_L_B_15'], S_L_P:['SO_L_P'],
+  NA_FC:['SE_L_FCB','SE_L_FCP'], NA_MP:['SO_L_P'],
+};
+const SM_LARGE = {
+  SO_L_F:   { pt:'Flowrack Manual Espinha Pescado', es:'Flowrack Manual Espina Pescado', prod:112.78, bc_ref:20, variable:true  },
+  SO_L_B:   { pt:'Milkrun Baker 1,2 m',             es:'Milkrun Baker 1,2 m',            prod:118.52, bc_ref:20, variable:true  },
+  SO_L_B_15:{ pt:'Milkrun Baker 1,5 m',             es:'Milkrun Baker 1,5 m',            prod:119.06, bc_ref:20, variable:true  },
+  SO_L_P:   { pt:'Manual Pallet',                   es:'Manual Pallet',                  prod:44.05,  variable:false },
+  SE_L_FCB: { pt:'Flowrack Central - Baker 1,2 m',  es:'Flowrack Central - Baker 1,2 m', prod:50.27,  variable:false },
+  SE_L_FCP: { pt:'Flowrack Central - Pallet',       es:'Flowrack Central - Pallet',      prod:43.08,  variable:false },
+};
+const GOLEIRO = {
+  RE_BK_isla:    { pt:'Separacao por ilha em BKs',            es:'Separacion por isla en BKs',            prod:357.14  },
+  RE_BK_induc:   { pt:'Pacotes em BK para reinducao',         es:'Paquetes en BK para reinduccion',        prod:1342.64 },
+  RE_BK_islaBIP: { pt:'Separacao por ilha em BKs + BIPEAR',   es:'Separacion por isla en BKs + BIPEAR',   prod:300.96  },
+  RE_BK_inducBIP:{ pt:'Pacotes em BK para reinducao + BIPEAR',es:'Paquetes en BK para reinduccion + BIPEAR',prod:727.87 },
+};
+const MOV_LARGE = {
+  M_L_BK: { pt:'Traslado Baker Volumoso', es:'Traslado Baker Volumoso', d_ref:20, fixed:13.0, variable:53.08, sppp:15 },
+  M_L_P:  { pt:'Patin Mecanico Volumoso', es:'Patin Mecanico Volumoso', d_ref:20, fixed:16.0, variable:82.53, sppp:15 },
+  M_L_PE: { pt:'Patin Eletrico Volumoso', es:'Patin Electrico Volumoso',d_ref:20, fixed:14.0, variable:63.86, sppp:15 },
+};
+const MOV_LARGE_REF = { M_L_BK:817.2, M_L_P:548.0, M_L_PE:584.4 };
+const MOV_OVER = {
+  M_OV_P: { pt:'Patin Mecanico Oversize', es:'Patin Mecanico Oversize', d_ref:10, fixed:20.0, variable:55.76, sppp:4 },
+  M_O_PE: { pt:'Patin Eletrico Oversize', es:'Patin Electrico Oversize',d_ref:10, fixed:18.0, variable:55.43, sppp:4 },
+  M_O_BK: { pt:'Baker Oversize',          es:'Baker Oversize',          d_ref:10, fixed:10.0, variable:33.25, sppp:4 },
+};
+const MOV_OVER_REF  = { M_OV_P:190.07, M_O_PE:196.43, M_O_BK:332.49 };
+const MOV_OVER_RUAS = { d_ref:10, fixed:15.0, variable:11.35, sppp:4 };
+const MOV_OVER_RUAS_REF = 136.45;
+const MOV_BULKY     = { d_ref:10, fixed:8.0, variable:26.67, sppp:1.5 };
+const MOV_BULKY_REF = 155.73;
+
+// =====================================================================
+// HELPERS
+// =====================================================================
+function movProd(model, dist, refProd, refModel) {
+  const m = refModel;
+  if (!m) return refProd;
+  if (!dist || isNaN(dist) || dist <= 0) return null;
+  const cycle_new = m.fixed + m.variable * (dist / m.d_ref);
+  return (3600 / cycle_new) * m.sppp;
+}
+function sortProd(modelDef, bcPerRua) {
+  if (!modelDef) return 0;
+  if (!modelDef.variable) return modelDef.prod;
+  if (!bcPerRua || isNaN(bcPerRua) || bcPerRua <= 0) return null;
+  return modelDef.prod * modelDef.bc_ref / bcPerRua;
+}
+function fmt(v) {
+  if (v === null || v === undefined || isNaN(v) || !isFinite(v)) return '--';
+  return Math.round(v).toLocaleString('pt-BR');
+}
+function getNum(id) {
+  const el = document.getElementById(id);
+  if (!el || el.value === '') return NaN;
+  const v = +el.value;
+  return isNaN(v) ? NaN : v;
+}
+function getInputs() {
+  return {
+    vol:      getNum('vol'),
+    pctVol:   getNum('pctVol')   / 100,
+    pctOver:  getNum('pctOver')  / 100,
+    pctBulky: getNum('pctBulky') / 100,
+    tInhub:   getNum('tInhub'),
+    tSort:    getNum('tSort'),
+    tDisp:    getNum('tDispatch'),
+    bcSort:   getNum('bcSort'),
+    ruasSort: getNum('ruasSort'),
+    bcLarge:  getNum('bcLarge'),
+    ruasLarge:getNum('ruasLarge'),
+    tarimOver:getNum('tarimOver'),
+    ruasOver: getNum('ruasOver'),
+    temSacas: document.getElementById('temSacas').value === 'sim',
+    bcSacas:  getNum('bcSacas'),
+    distGM:   getNum('distGM'),
+    distLarge:getNum('distLarge'),
+    distOver: getNum('distOver'),
+    distBulky:getNum('distBulky'),
+  };
+}
+
+// =====================================================================
+// PRESERVE SELECTIONS
+// =====================================================================
+const SEL = {};
+function saveSelect(id) { const el = document.getElementById(id); if (el) SEL[id] = el.value; }
+function getSel(id, def) { return SEL[id] || def; }
+
+// =====================================================================
+// STEP BUILDERS
+// =====================================================================
+function rowFixed(nameKey, label, prod, noteKey, cls) {
+  const noteHtml = noteKey ? '<span class="note">' + t(noteKey) + '</span>' : '';
+  const valStr   = (prod !== null && prod !== undefined) ? fmt(prod) : '--';
+  const isNA     = prod === null || prod === undefined;
+  return '<div class="process-row' + (cls ? ' '+cls : '') + '">' +
+    '<div><div class="process-name">' + t(nameKey) + '</div><div class="process-desc">' + label + ' ' + noteHtml + '</div></div>' +
+    '<div class="process-fixed-lbl">' + t('modelo_unico') + '</div>' +
+    '<div class="cap-badge">' +
+      '<div class="cap-value' + (isNA?' na':'') + '">' + valStr + '</div>' +
+      '<div class="cap-unit">' + t('paq_h') + '</div>' +
+      '<div class="cap-type fixed">' + t('fixa') + '</div>' +
+    '</div></div>';
+}
+function rowNA(nameKey, reason, cls) {
+  return '<div class="process-row' + (cls?' '+cls:'') + '" style="opacity:.5">' +
+    '<div><div class="process-name">' + t(nameKey) + '</div><div class="process-desc">' + (reason||t('na')) + '</div></div>' +
+    '<div></div>' +
+    '<div class="cap-badge"><div class="cap-value na">' + t('na') + '</div><div class="cap-unit">' + t('paq_h') + '</div><div class="cap-type conditional">' + t('na_lbl') + '</div></div>' +
+    '</div>';
+}
+function rowSelect(nameKey, id, options, selVal, prodVal, noteKey, cls, isVar) {
+  const opts    = options.map(function(o){ return '<option value="' + o.val + '"' + (o.val===selVal?' selected':'') + '>' + o.lbl + '</option>'; }).join('');
+  const noteHtml= noteKey ? '<span class="note">' + t(noteKey) + '</span>' : '';
+  const capVal  = (prodVal !== null && prodVal !== undefined && !isNaN(prodVal)) ? fmt(prodVal) : '--';
+  const isNA    = prodVal === null || prodVal === undefined || isNaN(prodVal);
+  const typeC   = isVar ? 'variable' : 'fixed';
+  const typeLbl = isVar ? t('variavel') : t('fixa');
+  return '<div class="process-row' + (cls?' '+cls:'') + '">' +
+    '<div><div class="process-name">' + t(nameKey) + (noteKey?'<br>'+noteHtml:'') + '</div></div>' +
+    '<select class="method-select" id="' + id + '" onchange="onSelChange(\'' + id + '\')">' + opts + '</select>' +
+    '<div class="cap-badge"><div class="cap-value' + (isNA?' na':'') + '" id="prod-' + id + '">' + capVal + '</div><div class="cap-unit">' + t('paq_h') + '</div><div class="cap-type ' + typeC + '" id="type-' + id + '">' + typeLbl + '</div></div>' +
+    '</div>';
+}
+function rowConfig(nameKey, id, options, selVal) {
+  const opts = options.map(function(o){ return '<option value="' + o.val + '"' + (o.val===selVal?' selected':'') + '>' + o.lbl + '</option>'; }).join('');
+  return '<div class="process-row step-config">' +
+    '<div><div class="process-name" style="color:var(--blue)">' + t(nameKey) + '</div></div>' +
+    '<select class="method-select" id="' + id + '" onchange="onSelChange(\'' + id + '\')">' + opts + '</select>' +
+    '<div class="cap-badge"><div class="cap-value na">--</div><div class="cap-unit"></div><div class="cap-type conditional">' + t('config') + '</div></div>' +
+    '</div>';
+}
+function onSelChange(id) { saveSelect(id); render(); }
+
+// =====================================================================
+// RENDER SORTEABLE
+// =====================================================================
+var sortBotProd = null, sortBotName = '';
+function renderSorteable(inp) {
+  var convId='sel-conv-sort', descId='sel-desc-sort', etiqId='sel-etiq-sort';
+  var pescaId='sel-pesca-sort', sortId='sel-sort-sort', sacasId='sel-sacas-sort', golId='sel-goleiro-sort';
+  [convId,descId,etiqId,pescaId,sortId,sacasId,golId].forEach(saveSelect);
+
+  var convVal  = getSel(convId,'cv_mot2');
+  var descVal  = getSel(descId,'DE_S_D');
+  var etiqVal  = getSel(etiqId,'ET_S_FC');
+  var convData = CONV[convVal]||CONV.cv_mot2;
+
+  var pescaGroup;
+  if (convVal==='cv_man'||convVal==='cv_man2') pescaGroup=PESCA_SORT.manual;
+  else if (convVal==='cv_sin') pescaGroup=PESCA_SORT.sin;
+  else pescaGroup=PESCA_SORT.motorizado;
+
+  var pescaKeys = Object.keys(pescaGroup);
+  var pescaVal  = pescaKeys.indexOf(getSel(pescaId))>=0 ? getSel(pescaId) : pescaKeys[0];
+  SEL[pescaId]  = pescaVal;
+  var sortKeys  = SORTING_SORT[pescaVal]||[];
+  var sortVal   = sortKeys.indexOf(getSel(sortId))>=0 ? getSel(sortId) : (sortKeys[0]||'');
+  SEL[sortId]   = sortVal;
+  var sortModel = SM_SORT[sortVal];
+  var sortProdVal = sortModel ? sortProd(sortModel, inp.bcSort) : 0;
+  var golVal  = getSel(golId,'RE_BK_isla');
+  var golData = GOLEIRO[golVal]||GOLEIRO.RE_BK_isla;
+
+  var pctSort = isNaN(inp.pctVol) ? NaN : Math.max(0, 1 - (inp.pctVol||0) - (inp.pctOver||0) - (inp.pctBulky||0));
+  var volSort = isNaN(inp.vol) || isNaN(pctSort) ? NaN : inp.vol * pctSort;
+  document.getElementById('info-sort').innerHTML =
+    t('vol_info') + ': <b>' + fmt(volSort) + '</b> ' + t('vol_base') + (isNaN(pctSort) ? '' : ' (' + Math.round(pctSort*100) + '%)');
+
+  // bottleneck
+  var prods = [
+    {p:DESC[descVal]&&DESC[descVal].prod, name:DESC[descVal]&&DESC[descVal][lang]},
+    {p:INDUC.IN_S_F.prod, name:INDUC.IN_S_F[lang]},
+    {p:ET_SORT[etiqVal]&&ET_SORT[etiqVal].prod, name:ET_SORT[etiqVal]&&ET_SORT[etiqVal][lang]},
+    {p:pescaGroup[pescaVal].prod, name:pescaGroup[pescaVal][lang]},
+    {p:sortProdVal, name:sortModel?sortModel[lang]:''},
+  ];
+  var minP=Infinity, minN='';
+  prods.forEach(function(x){ if(x.p&&x.p<minP){minP=x.p;minN=x.name;} });
+  sortBotProd = minP<Infinity ? minP : null;
+  sortBotName = minN;
+
+  var convOpts  = Object.keys(CONV).map(function(k){return{val:k,lbl:CONV[k][lang]};});
+  var descOpts  = ['DE_S_D','DE_S'].map(function(k){return{val:k,lbl:DESC[k][lang]};});
+  var etiqOpts  = Object.keys(ET_SORT).map(function(k){return{val:k,lbl:ET_SORT[k][lang]};});
+  var pescaOpts = pescaKeys.map(function(k){return{val:k,lbl:pescaGroup[k][lang]};});
+  var sortOpts  = sortKeys.map(function(k){return{val:k,lbl:SM_SORT[k][lang]};});
+  var golOpts   = Object.keys(GOLEIRO).map(function(k){return{val:k,lbl:GOLEIRO[k][lang]};});
+  var descData  = DESC[descVal]||DESC.DE_S_D;
+  var etiqData  = ET_SORT[etiqVal]||Object.values(ET_SORT)[0];
+
+  var html = rowConfig('step_conveyor',convId,convOpts,convVal);
+  html += rowSelect('n_descarga',descId,descOpts,descVal,descData.prod,descData.note,'s-sort',false);
+  html += rowNA('n_mov',t('incl_mov'),'s-sort');
+  html += rowFixed('n_inducao',INDUC.IN_S_F[lang],INDUC.IN_S_F.prod,null,'s-sort');
+  html += rowSelect('n_etiq',etiqId,etiqOpts,etiqVal,etiqData.prod,null,'s-sort',false);
+  if (convData.diverter) {
+    html += rowFixed('n_diverter',lang==='pt'?'Separacao manual de pacotes':'Separacion manual de paquetes',1363.14,null,'s-sort');
+  }
+  html += rowSelect('n_pesca',pescaId,pescaOpts,pescaVal,pescaGroup[pescaVal].prod,null,'s-sort',false);
+  html += rowSelect('n_sorting',sortId,sortOpts,sortVal,sortProdVal,null,'s-sort',sortModel&&sortModel.variable);
+  if (inp.temSacas) {
+    var sacasOpts = Object.keys(SM_SACAS).map(function(k){return{val:k,lbl:SM_SACAS[k][lang]};});
+    var sacasVal  = getSel(sacasId,'SO_S_SACAS_BK_SEP');
+    SEL[sacasId]  = sacasVal;
+    html += rowSelect('n_sacas',sacasId,sacasOpts,sacasVal,SM_SACAS[sacasVal]&&SM_SACAS[sacasVal].prod,null,'s-sort',false);
+  }
+  html += rowSelect('n_goleiro',golId,golOpts,golVal,golData.prod,null,'s-sort',false);
+  document.getElementById('flow-sort').innerHTML = html;
+}
+
+// =====================================================================
+// RENDER LARGE
+// =====================================================================
+function renderLarge(inp) {
+  var descId='sel-desc-large', movId='sel-mov-large', etiqId='sel-etiq-large';
+  var pescaId='sel-pesca-large', sortId='sel-sort-large';
+  [descId,movId,etiqId,pescaId,sortId].forEach(saveSelect);
+
+  var descVal  = getSel(descId,'DE_S_D');
+  var descData = DESC[descVal]||DESC.DE_S_D;
+  var hasMovL  = (descVal==='DE_D_GR'||descVal==='DE_D_M');
+  var descOpts = Object.keys(DESC).map(function(k){return{val:k,lbl:DESC[k][lang]};});
+  var etiqVal  = getSel(etiqId,'ET_L_F');
+  var etiqData = ET_LARGE[etiqVal]||ET_LARGE.ET_L_F;
+  var etiqOpts = Object.keys(ET_LARGE).map(function(k){return{val:k,lbl:ET_LARGE[k][lang]};});
+  var pescaGroup = (etiqVal==='ET_L_P') ? PESCA_LARGE.manual : PESCA_LARGE.flowrack;
+  var pescaKeys  = Object.keys(pescaGroup);
+  var pescaVal   = pescaKeys.indexOf(getSel(pescaId))>=0 ? getSel(pescaId) : pescaKeys[0];
+  SEL[pescaId]   = pescaVal;
+  var pescaData  = pescaGroup[pescaVal];
+  var sortKeys   = SORT_LARGE_BY_PESCA[pescaVal]||['SO_L_F'];
+  var sortVal    = sortKeys.indexOf(getSel(sortId))>=0 ? getSel(sortId) : sortKeys[0];
+  SEL[sortId]    = sortVal;
+  var sortModel  = SM_LARGE[sortVal];
+  var sortProdVal= sortModel ? sortProd(sortModel, inp.bcLarge) : 0;
+
+  var volLarge = isNaN(inp.vol)||isNaN(inp.pctVol) ? NaN : inp.vol*inp.pctVol;
+  document.getElementById('info-large').innerHTML =
+    t('lbl_large') + ': <b>' + fmt(volLarge) + '</b> ' + t('vol_base') + (isNaN(inp.pctVol)?'':' ('+Math.round(inp.pctVol*100)+'%)');
+
+  var html = rowSelect('n_descarga',descId,descOpts,descVal,descData.prod,descData.note,'s-large',false);
+  if (hasMovL) {
+    var movKeys   = Object.keys(MOV_LARGE);
+    var movVal    = movKeys.indexOf(getSel(movId))>=0 ? getSel(movId) : movKeys[0];
+    SEL[movId]    = movVal;
+    var movProdVal= movProd(MOV_LARGE[movVal], inp.distLarge, MOV_LARGE_REF[movVal], MOV_LARGE[movVal]);
+    var movOpts   = movKeys.map(function(k){return{val:k,lbl:MOV_LARGE[k][lang]};});
+    html += rowSelect('n_mov',movId,movOpts,movVal,movProdVal,null,'s-large',true);
+  } else {
+    html += rowNA('n_mov',t('na'),'s-large');
+  }
+  html += rowFixed('n_inducao',INDUC.IN_L_F[lang],INDUC.IN_L_F.prod,null,'s-large');
+  html += rowSelect('n_etiq',etiqId,etiqOpts,etiqVal,etiqData.prod,null,'s-large',false);
+  var pescaOpts = pescaKeys.map(function(k){return{val:k,lbl:pescaGroup[k][lang]};});
+  if (!pescaData||pescaData.na) {
+    html += rowNA('n_pesca',t('na'),'s-large');
+  } else {
+    html += rowSelect('n_pesca',pescaId,pescaOpts,pescaVal,pescaData.prod,null,'s-large',false);
+  }
+  var sortOpts = sortKeys.map(function(k){return{val:k,lbl:SM_LARGE[k][lang]};});
+  html += rowSelect('n_sorting',sortId,sortOpts,sortVal,sortProdVal,null,'s-large',sortModel&&sortModel.variable);
+  document.getElementById('flow-large').innerHTML = html;
+}
+
+// =====================================================================
+// RENDER OVERSIZE
+// =====================================================================
+function renderOversize(inp) {
+  var movBufId='sel-movbuf-over';
+  [movBufId].forEach(saveSelect);
+  var volOver = isNaN(inp.vol)||isNaN(inp.pctOver) ? NaN : inp.vol*inp.pctOver;
+  document.getElementById('info-over').innerHTML =
+    t('lbl_over') + ': <b>' + fmt(volOver) + '</b> ' + t('vol_base') + (isNaN(inp.pctOver)?'':' ('+Math.round(inp.pctOver*100)+'%)');
+  var movBufKeys  = Object.keys(MOV_OVER);
+  var movBufVal   = movBufKeys.indexOf(getSel(movBufId))>=0 ? getSel(movBufId) : movBufKeys[0];
+  SEL[movBufId]   = movBufVal;
+  var movBufProd  = movProd(MOV_OVER[movBufVal], inp.distOver, MOV_OVER_REF[movBufVal], MOV_OVER[movBufVal]);
+  var movBufOpts  = movBufKeys.map(function(k){return{val:k,lbl:MOV_OVER[k][lang]};});
+  var movRuasProd = movProd(MOV_OVER_RUAS, inp.distOver, MOV_OVER_RUAS_REF, MOV_OVER_RUAS);
+  var html = rowFixed('n_descarga',DESC.DE_D_M[lang],DESC.DE_D_M.prod,'so_desc','s-over');
+  html += rowSelect('n_mov_buf',movBufId,movBufOpts,movBufVal,movBufProd,null,'s-over',true);
+  html += rowFixed('n_mov_ruas','Patin Mecanico Oversize',movRuasProd,null,'s-over');
+  html += rowFixed('n_etiq',ET_OVER.ET_O_P[lang],ET_OVER.ET_O_P.prod,null,'s-over');
+  html += rowFixed('n_sorting','Pallet (SO_O)',132.76,null,'s-over');
+  document.getElementById('flow-over').innerHTML = html;
+}
+
+// =====================================================================
+// RENDER BULKY
+// =====================================================================
+function renderBulky(inp) {
+  var volBulky = isNaN(inp.vol)||isNaN(inp.pctBulky) ? NaN : inp.vol*inp.pctBulky;
+  document.getElementById('info-bulky').innerHTML =
+    t('lbl_bulky') + ': <b>' + fmt(volBulky) + '</b> ' + t('vol_base') + (isNaN(inp.pctBulky)?'':' ('+Math.round(inp.pctBulky*100)+'%)');
+  var movBulkyProd = movProd(MOV_BULKY, inp.distBulky, MOV_BULKY_REF, MOV_BULKY);
+  var html = rowFixed('n_descarga',DESC.DE_D_M[lang],DESC.DE_D_M.prod,'so_desc','s-bulky');
+  html += rowFixed('n_mov','Carrito Manual (M-B-BK)',movBulkyProd,null,'s-bulky');
+  html += rowFixed('n_etiq',ET_OVER.ET_O_P[lang],ET_OVER.ET_O_P.prod,null,'s-bulky');
+  document.getElementById('flow-bulky').innerHTML = html;
+}
+
+// =====================================================================
+// RENDER LIVIANOS
+// =====================================================================
+function renderLivianos() {
+  var html = rowFixed('n_mov',lang==='pt'?'Separacao / Movimentacao (SE_LI_B)':'Separacion / Movimiento (SE_LI_B)',22312,null,'s-liv');
+  html += rowFixed('n_inducao',lang==='pt'?'Inducao Livianos (IN_LI)':'Induccion Livianos (IN_LI)',34847,null,'s-liv');
+  html += rowFixed('n_etiq',lang==='pt'?'Etiquetagem Livianos':'Etiquetado Livianos',224.39,null,'s-liv');
+  html += rowFixed('n_sacas',lang==='pt'?'Sorting em Sacas (SO_LI_C)':'Sorteo en Sacas (SO_LI_C)',502.01,null,'s-liv');
+  document.getElementById('flow-liv').innerHTML = html;
+}
+
+// =====================================================================
+// SUMMARY
+// =====================================================================
+function renderSummary(inp) {
+  var pctSort = isNaN(inp.pctVol) ? NaN : Math.max(0, 1 - (inp.pctVol||0) - (inp.pctOver||0) - (inp.pctBulky||0));
+  document.getElementById('s-vol').textContent       = isNaN(inp.vol) ? '--' : Math.round(inp.vol).toLocaleString('pt-BR');
+  document.getElementById('s-sort-pct').textContent  = isNaN(pctSort) ? '--' : Math.round(pctSort*100) + '%';
+  document.getElementById('s-large-pct').textContent = isNaN(inp.pctVol) ? '--' : Math.round(inp.pctVol*100) + '%';
+  if (sortBotProd) {
+    document.getElementById('s-bottleneck').textContent = fmt(sortBotProd);
+    document.getElementById('s-bottleneck-name').textContent = sortBotName ? sortBotName.substring(0,22) : 'paq/h';
+  } else {
+    document.getElementById('s-bottleneck').textContent = '--';
+    document.getElementById('s-bottleneck-name').textContent = 'paq/h';
+  }
+}
+
+// =====================================================================
+// MAIN RENDER
+// =====================================================================
+function render() {
+  var inp = getInputs();
+  document.getElementById('rowBcSacas').style.display = inp.temSacas ? '' : 'none';
+  renderSorteable(inp);
+  renderLarge(inp);
+  renderOversize(inp);
+  renderBulky(inp);
+  renderLivianos();
+  renderSummary(inp);
+}
+function toggleCard(id) {
+  var hdr  = document.querySelector('#card-' + id + ' .flow-header');
+  var body = document.getElementById('body-' + id);
+  if (hdr)  hdr.classList.toggle('open');
+  if (body) body.classList.toggle('open');
+}
+document.querySelectorAll('.inputs-panel input, .inputs-panel select').forEach(function(el){
+  el.addEventListener('input', render);
+  el.addEventListener('change', render);
+});
+applyLang();
+</script>
+</body>
+</html>
